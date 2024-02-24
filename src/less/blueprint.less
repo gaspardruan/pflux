@@ -1,0 +1,49 @@
+@import (inline) "@blueprintjs/core/lib/css/blueprint.css";
+@import (inline) "@blueprintjs/select/lib/css/blueprint-select.css";
+@import (inline) "@blueprintjs/icons/lib/css/blueprint-icons.css";
+@import "@blueprintjs/core/lib/less/variables.less";
+
+// Override some of the colors
+.flux.bp5-dark {
+  .bp5-menu,
+  .bp5-popover .bp5-popover-content {
+    background-color: @background-1;
+  }
+
+  .bp5-popover .bp5-popover-arrow-fill {
+    fill: @background-1;
+  }
+
+  .bp5-button:not([class*="bp5-intent-"]) {
+    background-color: @background-1;
+  }
+
+  .bp5-button.bp5-minimal {
+    background-color: unset;
+  }
+
+  .bp5-button:hover,
+  .bp5-button.bp5-minimal:hover {
+    background-color: rgba(138, 155, 168, 0.15);
+  }
+
+  .bp5-menu-item.bp5-active.bp5-intent-primary {
+    background-color: @foreground-3;
+  }
+
+  .bp5-dialog {
+    background-color: @background-4;
+
+    .bp5-dialog-header {
+      background-color: @background-3;
+    }
+  }
+
+  .bp5-running-text {
+    font-size: 14px;
+  }
+
+  .bp5-alert-contents {
+    width: 100%;
+  }
+}
