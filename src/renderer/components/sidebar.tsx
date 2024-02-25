@@ -7,7 +7,7 @@ import { AppState } from '../state';
 export const Sidebar = ({ appState }: { appState: AppState }) => {
   const ELEMENT_MAP = {
     fileTree: <SidebarFileTree appState={appState} />,
-    parser: <SidebarParser />,
+    parser: <SidebarParser appState={appState} />,
   };
   return (
     <Mosaic<string>

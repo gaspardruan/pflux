@@ -2,7 +2,7 @@ import * as MonacoType from 'monaco-editor';
 import { action, computed, makeObservable, observable, reaction } from 'mobx';
 import { MosaicDirection, MosaicNode, getLeaves } from 'react-mosaic-component';
 
-import { EditorId, EditorValues, GridId } from '../interface';
+import { EditorId, EditorValues, GridId, StructNodeInfo } from '../interface';
 import { getEmptyContent, sortGrid } from './utils/editor-utils';
 
 export type Editor = MonacoType.editor.IStandaloneCodeEditor;
@@ -13,6 +13,7 @@ interface EditorBackup {
   position?: MonacoType.Position | null;
   mosaic: MosaicNode<GridId>;
   isEdited: boolean;
+  structExpandRecord: Map<string, boolean>;
 }
 
 export class EditorMosaic {
@@ -23,7 +24,14 @@ export class EditorMosaic {
     id: EditorId | null;
     mosaic: MosaicNode<GridId> | null;
     isEdited: boolean;
-  } = { editor: null, id: null, mosaic: null, isEdited: false };
+    structExpandRecord: Map<string, boolean> | null;
+  } = {
+    editor: null,
+    id: null,
+    mosaic: null,
+    isEdited: false,
+    structExpandRecord: null,
+  };
 
   public backups = new Map<EditorId, EditorBackup>();
 
@@ -44,13 +52,33 @@ export class EditorMosaic {
     return ![...this.isEditeds.values()].some((edited) => edited);
   }
 
+  public get fileContent() {
+    return this.mainEditor.editor?.getValue() || 'print("Hello, World!")';
+  }
+
+  // public get structTree() {
+  //   let result: Array<StructNodeInfo> = [];
+  //   // eslint-disable-next-line promise/catch-or-return
+  //   window.ElectronFlux.parseStruct(this.fileContent2).then((res) => {
+  //     result = res;
+  //   });
+  //   return result;
+  //   return `test${this.fileContent2}`;
+  // }
+
   public focusedGridId: GridId | null = null;
+
+  public fileContent2 = 'print("Hello, World!")';
+
+  public structTree: Array<StructNodeInfo> = [];
 
   constructor() {
     makeObservable(this, {
       addFile: action,
       addNewFile: action,
       backups: observable,
+      fileContent: computed,
+      fileContent2: observable,
       focusedGridId: observable,
       folderName: observable,
       isEditeds: computed,
@@ -59,18 +87,55 @@ export class EditorMosaic {
       replaceFile: action,
       remove: action,
       resetLayout: action,
-      setFocusedGridId: action,
       set: action,
+      setFileContent2: action,
+      setFocusedGridId: action,
+      setIsEdited: action,
       setMainEditor: action,
+      setStructTree: action,
+      setStructExpand: action,
       setVisible: action,
       show: action,
+      structTree: observable,
       updateMosaic: action,
     });
+
+    this.setStructExpand = this.setStructExpand.bind(this);
 
     reaction(
       () => this.mainEditor.mosaic,
       () => this.layout(),
     );
+
+    reaction(
+      () => this.fileContent2,
+      () => {
+        // eslint-disable-next-line promise/catch-or-return
+        window.ElectronFlux.parseStruct(this.fileContent2)
+          .then((res) => {
+            if (res.length > 0) this.setStructTree(res);
+          })
+          .catch(() => {
+            // do nothing
+          });
+      },
+    );
+  }
+
+  public setStructTree(tree: Array<StructNodeInfo>) {
+    this.structTree = tree;
+  }
+
+  public setFileContent2(content: string) {
+    this.fileContent2 = content;
+  }
+
+  public setIsEdited(val: boolean) {
+    this.mainEditor.isEdited = val;
+  }
+
+  public setStructExpand(id: string, val: boolean) {
+    this.mainEditor.structExpandRecord!.set(id, val);
   }
 
   public updateMosaic(mosaic: MosaicNode<GridId> | null) {
@@ -93,7 +158,13 @@ export class EditorMosaic {
     this.folderName = folderName;
 
     this.backups.clear();
-    this.mainEditor = { editor: null, id: null, mosaic: null, isEdited: false };
+    this.mainEditor = {
+      editor: null,
+      id: null,
+      mosaic: null,
+      isEdited: false,
+      structExpandRecord: new Map(),
+    };
 
     const values = new Map(Object.entries(valuesIn)) as Map<EditorId, string>;
     for (const [id, value] of values) {
@@ -101,6 +172,7 @@ export class EditorMosaic {
     }
 
     this.firstLoadFile();
+    console.log('Set over:', this.mainEditor);
   }
 
   private firstLoadFile() {
@@ -131,6 +203,7 @@ export class EditorMosaic {
       mosaic: this.mainEditor.mosaic!,
       position: this.mainEditor.editor!.getPosition(),
       isEdited: this.mainEditor.isEdited,
+      structExpandRecord: this.mainEditor.structExpandRecord!,
     };
     this.mainEditor.mosaic = backup.mosaic;
   }
@@ -158,10 +231,26 @@ export class EditorMosaic {
       this.mainEditor.editor.revealPositionInCenter(backup.position);
     }
     this.mainEditor.isEdited = backup.isEdited;
+    this.mainEditor.structExpandRecord = backup.structExpandRecord;
     if (!this.mainEditor.isEdited) {
       this.observeEdit();
     }
     this.mainEditor.editor.focus();
+
+    this.fileContent2 = this.mainEditor.editor.getValue();
+    this.mainEditor.editor.onDidChangeModelContent((e) => {
+      // 若 e.changes.text 中的字符均为控制字符或空格字符（空字符除外），则不触发
+      if (
+        (e.changes.length === 1 && /^\s+$/.test(e.changes[0].text)) ||
+        (e.changes.length === 2 &&
+          /^\s+$/.test(e.changes[0].text) &&
+          e.changes[1].text === '')
+      ) {
+        return;
+      }
+      this.setFileContent2(this.mainEditor.editor!.getValue());
+    });
+
     this.focusedGridId = id;
   }
 
@@ -188,7 +277,12 @@ export class EditorMosaic {
     const model = monaco.editor.createModel(value, 'python');
     model.updateOptions({ tabSize: 2 });
 
-    const backup: EditorBackup = { model, mosaic: id, isEdited: false };
+    const backup: EditorBackup = {
+      model,
+      mosaic: id,
+      isEdited: false,
+      structExpandRecord: new Map(),
+    };
     this.backups.set(id, backup);
   }
 
@@ -275,7 +369,7 @@ export class EditorMosaic {
 
   public observeEdit() {
     const disposable = this.mainEditor.editor!.onDidChangeModelContent(() => {
-      this.mainEditor.isEdited = true;
+      this.setIsEdited(true);
       disposable.dispose();
     });
   }

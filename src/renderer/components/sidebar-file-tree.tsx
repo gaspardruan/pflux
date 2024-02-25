@@ -144,7 +144,7 @@ export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
   ];
 
   return (
-    <div className="flux-scrollbar">
+    <div className="file-tree flux-scrollbar">
       <Tree contents={editorTree} />
     </div>
   );

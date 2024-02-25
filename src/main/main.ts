@@ -20,6 +20,7 @@ import {
 import setupMenu from './menu';
 import setupAboutPanel from './about-panel';
 import { createWindow } from './window';
+import { setupStructParse } from './core/struct-parse';
 
 import { IpcEvents } from '../ipc-events';
 
@@ -43,6 +44,8 @@ export async function onReady() {
   setupAboutPanel();
   setupMenu();
   setupTitleBarClickMac();
+
+  setupStructParse();
 
   createWindow();
 }

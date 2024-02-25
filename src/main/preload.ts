@@ -38,6 +38,9 @@ const electronHandler = {
   macTitlebarClicked() {
     ipcRenderer.send(IpcEvents.CLICK_TITLEBAR_MAC);
   },
+  parseStruct(code: string) {
+    return ipcRenderer.invoke(IpcEvents.PARSE_STRUCT, code);
+  },
   platform: process.platform,
   removeAllListeners(type: FluxEvent) {
     const channel = channelMapping[type];

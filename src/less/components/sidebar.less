@@ -1,3 +1,5 @@
+@import '@blueprintjs/core/lib/less/variables.less';
+
 #new-file-input {
   box-shadow: 0 0 0 1600px rgba(0, 0, 0, 0.1);
   border-radius: 0;
@@ -9,13 +11,54 @@
   overflow: visible;
 }
 
-.bp5-tree-node-caret-none {
+.file-tree .bp5-tree-node-caret-none {
   min-width: 8px;
 }
 
-.bp5-tree-node-content-1 {
+.struct-tree-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-tree .bp5-tree-node-content-1 {
   padding-left: 0;
 }
+
+.struct-tree .bp5-tree-node-caret-none {
+  min-width: 18px;
+}
+
+.struct-tree .bp5-tree-node-caret {
+  min-width: 16px;
+  padding: 1px;
+}
+
+.struct-tree .bp5-tree-node-icon {
+  margin-right: 2px;
+}
+
+.struct-tree {
+  .bp5-tree-node-icon-class {
+    color: @blue3 !important;
+  }
+  .bp5-tree-node-icon-method,
+  .bp5-tree-node-icon-function,
+  .bp5-tree-node-icon-property {
+    color: @red3 !important;
+  }
+  .bp5-tree-node-icon-variable {
+    color: @green3 !important;
+  }
+  .bp5-tree-node-icon-attribute {
+    color: @orange3 !important;
+  }
+}
+
+each(range(0, 30, 1), {
+  .struct-tree .bp5-tree-node-content-@{index} {
+    padding-left: @index * 17px;
+  }
+});
 
 .pointer {
   cursor: pointer;

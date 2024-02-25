@@ -37,3 +37,17 @@ export type FluxEvent =
   | 'select-all-in-editor'
   | 'toggle-monaco-option'
   | 'undo-in-editor';
+
+export type NodeType =
+  | 'class'
+  | 'method'
+  | 'property'
+  | 'attribute'
+  | 'function'
+  | 'variable';
+
+export interface StructNodeInfo {
+  type: NodeType;
+  text: string;
+  code: Array<StructNodeInfo>;
+}
