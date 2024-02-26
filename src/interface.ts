@@ -1,3 +1,5 @@
+import { IRange } from 'monaco-editor';
+
 export enum GlobalSetting {
   isUsingSystemTheme = 'isUsingSystemTheme',
   theme = 'theme',
@@ -50,4 +52,5 @@ export interface StructNodeInfo {
   type: NodeType;
   text: string;
   code: Array<StructNodeInfo>;
+  range: IRange;
 }

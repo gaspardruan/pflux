@@ -172,7 +172,6 @@ export class EditorMosaic {
     }
 
     this.firstLoadFile();
-    console.log('Set over:', this.mainEditor);
   }
 
   private firstLoadFile() {
@@ -238,16 +237,7 @@ export class EditorMosaic {
     this.mainEditor.editor.focus();
 
     this.fileContent2 = this.mainEditor.editor.getValue();
-    this.mainEditor.editor.onDidChangeModelContent((e) => {
-      // 若 e.changes.text 中的字符均为控制字符或空格字符（空字符除外），则不触发
-      if (
-        (e.changes.length === 1 && /^\s+$/.test(e.changes[0].text)) ||
-        (e.changes.length === 2 &&
-          /^\s+$/.test(e.changes[0].text) &&
-          e.changes[1].text === '')
-      ) {
-        return;
-      }
+    this.mainEditor.editor.onDidChangeModelContent(() => {
       this.setFileContent2(this.mainEditor.editor!.getValue());
     });
 

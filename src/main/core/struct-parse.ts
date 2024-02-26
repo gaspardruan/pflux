@@ -62,9 +62,18 @@ function getFuncSignature(node: Def) {
   return `${node.name}(${node.params.map(printParam).join(', ')})`;
 }
 
+function getRange(node: SyntaxNode) {
+  return {
+    startLineNumber: node.location?.first_line || 1,
+    startColumn: (node.location?.first_column || 0) + 1,
+    endLineNumber: node.location?.last_line || 1,
+    endColumn: (node.location?.last_column || 0) + 1,
+  };
+}
+
 /**
  * Assuming that the node is a function
- * @param {Def} node
+ * @param {Def} func
  * @returns {Array<StructNodeInfo>}
  */
 function parseFunction(func: Def): Array<StructNodeInfo> {
@@ -78,6 +87,7 @@ function parseFunction(func: Def): Array<StructNodeInfo> {
         type: 'function',
         text: getFuncSignature(node),
         code: parseFunction(node),
+        range: getRange(node),
       });
     }
   });
@@ -97,6 +107,7 @@ function getClassAttrInFunction(func: Def, attrs: Map<string, StructNodeInfo>) {
             type: 'attribute',
             text: target.name,
             code: [],
+            range: getRange(target),
           });
         }
       });
@@ -123,6 +134,7 @@ function parseClass(c: Class): Array<StructNodeInfo> {
         type: 'method',
         text: getFuncSignature(node),
         code: parseFunction(node),
+        range: getRange(node),
       });
       getClassAttrInFunction(node, attrs);
     } else if (node.type === DECORATE) {
@@ -143,6 +155,7 @@ function parseClass(c: Class): Array<StructNodeInfo> {
         type,
         text: getFuncSignature(functionDef),
         code: parseFunction(functionDef),
+        range: getRange(functionDef),
       });
       getClassAttrInFunction(functionDef, attrs);
     } else if (node.type === ASSIGN) {
@@ -153,6 +166,7 @@ function parseClass(c: Class): Array<StructNodeInfo> {
               type: 'attribute',
               text: target.id,
               code: [],
+              range: getRange(node),
             });
           }
         }
@@ -179,12 +193,14 @@ function parseModule(m: Module): Array<StructNodeInfo> {
         type: 'function',
         text: getFuncSignature(node),
         code: parseFunction(node),
+        range: getRange(node),
       });
     } else if (node.type === CLASS) {
       result.push({
         type: 'class',
         text: getClassSignature(node),
         code: parseClass(node),
+        range: getRange(node),
       });
     } else if (node.type === ASSIGN) {
       node.targets.forEach((target) => {
@@ -193,6 +209,7 @@ function parseModule(m: Module): Array<StructNodeInfo> {
             type: 'variable',
             text: target.id,
             code: [],
+            range: getRange(node),
           });
         }
       });
