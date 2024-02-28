@@ -3,7 +3,7 @@ import { action, computed, makeObservable, observable, reaction } from 'mobx';
 import { MosaicDirection, MosaicNode, getLeaves } from 'react-mosaic-component';
 
 import { EditorId, EditorValues, GridId, StructNodeInfo } from '../interface';
-import { getEmptyContent, sortGrid } from './utils/editor-utils';
+import { getEmptyContent, sortGrid } from '../utils/editor-utils';
 
 export type Editor = MonacoType.editor.IStandaloneCodeEditor;
 
@@ -17,8 +17,6 @@ interface EditorBackup {
 }
 
 export class EditorMosaic {
-  public folderName: string = '';
-
   public mainEditor: {
     editor: Editor | null;
     id: EditorId | null;
@@ -52,10 +50,6 @@ export class EditorMosaic {
     return ![...this.isEditeds.values()].some((edited) => edited);
   }
 
-  public get fileContent() {
-    return this.mainEditor.editor?.getValue() || 'print("Hello, World!")';
-  }
-
   // public get structTree() {
   //   let result: Array<StructNodeInfo> = [];
   //   // eslint-disable-next-line promise/catch-or-return
@@ -68,7 +62,7 @@ export class EditorMosaic {
 
   public focusedGridId: GridId | null = null;
 
-  public fileContent2 = 'print("Hello, World!")';
+  public fileContent2 = '//Empty file\n';
 
   public structTree: Array<StructNodeInfo> = [];
 
@@ -77,13 +71,12 @@ export class EditorMosaic {
       addFile: action,
       addNewFile: action,
       backups: observable,
-      fileContent: computed,
       fileContent2: observable,
       focusedGridId: observable,
-      folderName: observable,
       isEditeds: computed,
       isSaved: computed,
       mainEditor: observable,
+      onAllSaved: action,
       replaceFile: action,
       remove: action,
       resetLayout: action,
@@ -134,6 +127,14 @@ export class EditorMosaic {
     this.mainEditor.isEdited = val;
   }
 
+  public onAllSaved() {
+    // backup 中的 isEdited 都设置为 false
+    for (const backup of this.backups.values()) {
+      backup.isEdited = false;
+    }
+    this.mainEditor.isEdited = false;
+  }
+
   public setStructExpand(id: string, val: boolean) {
     this.mainEditor.structExpandRecord!.set(id, val);
   }
@@ -154,9 +155,7 @@ export class EditorMosaic {
   }
 
   // Set the contents of the mosaic
-  public set(valuesIn: EditorValues, folderName: string = 'Files') {
-    this.folderName = folderName;
-
+  public set(valuesIn: EditorValues) {
     this.backups.clear();
     this.mainEditor = {
       editor: null,

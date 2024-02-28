@@ -7,6 +7,7 @@ import { defaultDark, defaultLight } from '../themes-defaults';
 
 // Importing styles files
 import '../less/root.less';
+import { FileManager } from './file-manager';
 
 /**
  * The top-level class controlling the whole app. This is not a React component,
@@ -16,6 +17,7 @@ import '../less/root.less';
  */
 export class App {
   public state = new AppState();
+  public fileManager = new FileManager(this.state);
 
   /**
    * Initial setup call

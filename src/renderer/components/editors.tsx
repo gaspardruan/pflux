@@ -13,9 +13,9 @@ import { Editor } from './editor';
 import { MaximizeButton, RemoveButton } from './editors-toolbar-button';
 import { EditorId, GridId } from '../../interface';
 import { AppState } from '../state';
-import { getEditorTitle } from '../utils/editor-utils';
-import { getAtPath, setAtPath } from '../utils/js-path';
-import { toggleMonaco } from '../utils/toggle-monaco';
+import { getEditorTitle } from '../../utils/editor-utils';
+import { getAtPath, setAtPath } from '../../utils/js-path';
+import { toggleMonaco } from '../../utils/toggle-monaco';
 
 const defaultMonacoOptions: MonacoType.editor.IEditorOptions = {
   minimap: {

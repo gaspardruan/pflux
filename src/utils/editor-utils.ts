@@ -1,4 +1,4 @@
-import { GridId } from '../../interface';
+import { EditorId, GridId } from '../interface';
 
 export function sortGrid(grids: GridId[]) {
   const result: GridId[] = [];
@@ -46,4 +46,8 @@ export function getEditorTitle(id: GridId): string {
     return `Analysis (${id})`;
   }
   return id;
+}
+
+export function isSupportedFile(filename: string): filename is EditorId {
+  return /\.py$/i.test(filename);
 }

@@ -23,6 +23,7 @@ import { createWindow } from './window';
 import { setupStructParse } from './core/struct-parse';
 
 import { IpcEvents } from '../ipc-events';
+import { setupContent } from './content';
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -44,6 +45,7 @@ export async function onReady() {
   setupAboutPanel();
   setupMenu();
   setupTitleBarClickMac();
+  setupContent();
 
   setupStructParse();
 

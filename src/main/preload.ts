@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-import { FluxEvent } from '../interface';
+import { EditorValues, Files, FluxEvent } from '../interface';
 import { IpcEvents } from '../ipc-events';
 
 const channelMapping: Record<FluxEvent, IpcEvents> = {
@@ -10,6 +10,7 @@ const channelMapping: Record<FluxEvent, IpcEvents> = {
   'execute-monaco-command': IpcEvents.MONACO_EXECUTE_COMMAND,
   'open-settings': IpcEvents.OPEN_SETTINGS,
   'redo-in-editor': IpcEvents.REDO_IN_EDITOR,
+  'saved-local-flux': IpcEvents.SAVED_LOCAL_FLUX,
   'select-all-in-editor': IpcEvents.SELECT_ALL_IN_EDITOR,
   'toggle-monaco-option': IpcEvents.MONACO_TOGGLE_OPTION,
   'undo-in-editor': IpcEvents.UNDO_IN_EDITOR,
@@ -35,8 +36,20 @@ const electronHandler = {
       }
     }
   },
+  getFiles(folder: string): Promise<EditorValues> {
+    return ipcRenderer.invoke(IpcEvents.FS_GET_FILES, folder);
+  },
   macTitlebarClicked() {
     ipcRenderer.send(IpcEvents.CLICK_TITLEBAR_MAC);
+  },
+  onGetFiles(
+    callback: () => Promise<{ folderPath: string | null; files: Files }>,
+  ) {
+    ipcRenderer.removeAllListeners(IpcEvents.GET_FILES);
+    ipcRenderer.on(IpcEvents.GET_FILES, async (e) => {
+      const { folderPath, files } = await callback();
+      e.ports[0].postMessage({ folderPath, files: [...files.entries()] });
+    });
   },
   parseStruct(code: string) {
     return ipcRenderer.invoke(IpcEvents.PARSE_STRUCT, code);

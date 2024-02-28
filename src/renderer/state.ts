@@ -7,7 +7,6 @@ import {
   when,
 } from 'mobx';
 
-import { files } from './utils/example-file';
 import { EditorMosaic } from './editor-mosaic';
 import {
   GenericDialogOptions,
@@ -34,6 +33,14 @@ export class AppState {
     (localStorage.getItem(GlobalSetting.fontFamily) as string) || undefined;
   public fontSize: number | undefined =
     parseInt(localStorage.getItem(GlobalSetting.fontSize)!, 10) || undefined;
+
+  public folderPath: string | null = localStorage.getItem(
+    GlobalSetting.folderPath,
+  );
+
+  public folderName: string | null = localStorage.getItem(
+    GlobalSetting.folderName,
+  );
 
   // -- Various sesstion-only settings ------
   public genericDialogOptions: GenericDialogOptions = {
@@ -63,6 +70,8 @@ export class AppState {
       fileTreeState: observable,
       fontFamily: observable,
       fontSize: observable,
+      folderPath: observable,
+      folderName: observable,
       genericDialogLastInput: observable,
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
@@ -72,6 +81,7 @@ export class AppState {
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
       setFileTreeState: action,
+      setFolderPathAndName: action,
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
@@ -96,9 +106,10 @@ export class AppState {
     );
     autorun(() => this.save(GlobalSetting.fontFamily, this.fontFamily));
     autorun(() => this.save(GlobalSetting.fontSize, this.fontSize));
-
+    autorun(() => this.save(GlobalSetting.folderPath, this.folderPath));
+    autorun(() => this.save(GlobalSetting.folderName, this.folderName));
     // load flux
-    this.editorMosaic.set(files);
+    this.initEditorMosaic();
   }
 
   /**
@@ -210,6 +221,31 @@ export class AppState {
 
   public setFileTreeState(state: 'add' | 'default') {
     this.fileTreeState = state;
+  }
+
+  public setFolderPathAndName(
+    folderPath: string | null,
+    folderName: string | null,
+  ) {
+    this.folderPath = folderPath;
+    this.folderName = folderName;
+  }
+
+  public async initEditorMosaic() {
+    if (this.folderPath) {
+      const values = await window.ElectronFlux.getFiles(this.folderPath);
+      // values为空对象
+      if (Object.keys(values).length !== 0) {
+        this.editorMosaic.set(values);
+      } else {
+        this.setFolderPathAndName(null, null);
+        const { files } = await import('../utils/example-file');
+        this.editorMosaic.set(files);
+      }
+    } else {
+      const { files } = await import('../utils/example-file');
+      this.editorMosaic.set(files);
+    }
   }
 
   /**

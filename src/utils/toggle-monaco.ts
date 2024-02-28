@@ -5,8 +5,8 @@
  * @returns {(boolean | string)}
  */
 export function toggleMonaco(input: boolean | string): boolean | string {
-  if (input === "off") return "on";
-  if (input === "on") return "off";
+  if (input === 'off') return 'on';
+  if (input === 'on') return 'off';
 
   return !input;
 }

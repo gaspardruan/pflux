@@ -1,10 +1,14 @@
 import { IRange } from 'monaco-editor';
 
+export type Files = Map<string, string>;
+
 export enum GlobalSetting {
   isUsingSystemTheme = 'isUsingSystemTheme',
   theme = 'theme',
   fontFamily = 'fontFamily',
   fontSize = 'fontSize',
+  folderPath = 'folderPath',
+  folderName = 'folderName',
 }
 
 export interface GenericDialogOptions {
@@ -36,6 +40,7 @@ export type FluxEvent =
   | 'execute-monaco-command'
   | 'open-settings'
   | 'redo-in-editor'
+  | 'saved-local-flux'
   | 'select-all-in-editor'
   | 'toggle-monaco-option'
   | 'undo-in-editor';

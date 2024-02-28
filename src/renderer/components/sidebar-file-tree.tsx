@@ -125,7 +125,7 @@ export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
       hasCaret: false,
       icon: 'folder-open',
       isExpanded: true,
-      label: editorMosaic.folderName,
+      label: appState.folderName || 'Files',
       secondaryLabel: (
         <ButtonGroup minimal>
           <Tooltip content="Add New File" minimal hoverOpenDelay={1000}>
