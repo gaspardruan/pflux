@@ -52,7 +52,7 @@ function getHelpItems(): Array<MenuItemConstructorOptions> {
     {
       label: 'Open Flux Repository...',
       click() {
-        shell.openExternal('https://github.com/electron/fiddle');
+        shell.openExternal('https://github.com/gaspardruan/pflux');
       },
     },
   );

@@ -18,6 +18,6 @@ export default function setupAboutPanel(): void {
     credits: 'https://github.com/gaspardruan',
     iconPath,
     version: process.versions.electron,
-    website: 'https://github.com/gaspardruan/flux',
+    website: 'https://github.com/gaspardruan/pflux',
   });
 }
