@@ -106,6 +106,7 @@ export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
             } else if (e.key === 'Enter') {
               addNewFile(e.currentTarget.value as EditorId);
               e.currentTarget.blur();
+              e.preventDefault();
             }
           }}
           // eslint-disable-next-line jsx-a11y/no-autofocus

@@ -29,7 +29,7 @@ export function sortGrid(grids: GridId[]) {
 }
 
 export function getEmptyContent(): string {
-  return '// Empty';
+  return '';
 }
 
 export function getEditorTitle(id: GridId): string {

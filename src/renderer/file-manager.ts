@@ -26,11 +26,11 @@ export class FileManager {
    * otherwise, return the focused editor file. Both are
    * returned as a map.
    */
-  public async getFiles(): Promise<{
+  public async getFiles(getAll: boolean): Promise<{
     folderPath: string | null;
     files: Files;
   }> {
-    if (this.appState.folderPath) {
+    if (this.appState.folderPath && !getAll) {
       const files = new Map<string, string>();
       const { id } = this.appState.editorMosaic.mainEditor;
       const { fileContent2 } = this.appState.editorMosaic;

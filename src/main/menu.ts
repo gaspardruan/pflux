@@ -9,7 +9,7 @@ import defaultMenu from 'electron-default-menu';
 
 import sendIpcEvent from './ipc';
 import { IpcEvents } from '../ipc-events';
-import { saveFlux } from './files';
+import { saveFlux, saveFluxAs } from './files';
 
 /**
  * Is the passed object a constructor for an Electron Menu?
@@ -131,15 +131,12 @@ function getFileMenu(): MenuItemConstructorOptions {
     },
     {
       label: 'Save',
-      click: () => saveFlux(),
+      click: saveFlux,
       accelerator: 'CmdOrCtrl+S',
     },
     {
       label: 'Save As',
-      click() {
-        // eslint-disable-next-line no-console
-        console.log('File -> Save As');
-      },
+      click: saveFluxAs,
       accelerator: 'CmdOrCtrl+Shift+S',
     },
   ];

@@ -43,11 +43,13 @@ const electronHandler = {
     ipcRenderer.send(IpcEvents.CLICK_TITLEBAR_MAC);
   },
   onGetFiles(
-    callback: () => Promise<{ folderPath: string | null; files: Files }>,
+    callback: (
+      getAll: boolean,
+    ) => Promise<{ folderPath: string | null; files: Files }>,
   ) {
     ipcRenderer.removeAllListeners(IpcEvents.GET_FILES);
-    ipcRenderer.on(IpcEvents.GET_FILES, async (e) => {
-      const { folderPath, files } = await callback();
+    ipcRenderer.on(IpcEvents.GET_FILES, async (e, { getAll }) => {
+      const { folderPath, files } = await callback(getAll);
       e.ports[0].postMessage({ folderPath, files: [...files.entries()] });
     });
   },

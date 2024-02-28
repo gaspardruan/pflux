@@ -255,7 +255,7 @@ export class EditorMosaic {
   //   }
   // }
 
-  public addFile(id: EditorId, value: string) {
+  public addFile(id: EditorId, value: string, isEdited = false) {
     if (!id.endsWith('.py')) {
       throw new Error(
         `Cannot add file "${id}": Only Python files are supported`,
@@ -264,12 +264,13 @@ export class EditorMosaic {
 
     const { monaco } = window;
     const model = monaco.editor.createModel(value, 'python');
+    console.log(id, value);
     model.updateOptions({ tabSize: 2 });
 
     const backup: EditorBackup = {
       model,
       mosaic: id,
-      isEdited: false,
+      isEdited,
       structExpandRecord: new Map(),
     };
     this.backups.set(id, backup);
@@ -280,7 +281,7 @@ export class EditorMosaic {
       throw new Error(`File "${id}" already exists`);
     }
 
-    this.addFile(id, value);
+    this.addFile(id, value, true);
   }
 
   public show(id: GridId) {

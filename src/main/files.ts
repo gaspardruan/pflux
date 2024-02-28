@@ -21,6 +21,17 @@ export async function saveFlux() {
   }
 }
 
+export async function saveFluxAs() {
+  const window = BrowserWindow.getFocusedWindow();
+  if (window) {
+    const { folderPath, files } = await getFiles(window, true);
+    const newPath = await showSaveDialog();
+    if (newPath && newPath !== folderPath) {
+      await saveFiles(window, newPath, files);
+    }
+  }
+}
+
 export async function saveFiles(
   window: BrowserWindow,
   folderPath: string,
