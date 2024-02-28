@@ -1,10 +1,17 @@
 import path from 'path';
 import * as fs from 'fs-extra';
-import { BrowserWindow, dialog } from 'electron';
+import { BrowserWindow, app, dialog, ipcMain } from 'electron';
 import { getFiles } from './utils/get-files';
 import { Files } from '../interface';
 import { IpcEvents } from '../ipc-events';
 import { isSupportedFile } from '../utils/editor-utils';
+import { readFlux } from './utils/read-flux';
+
+export function setupFileListener() {
+  ipcMain.on(IpcEvents.PATH_EXISTS, (event, p: string) => {
+    event.returnValue = fs.existsSync(p);
+  });
+}
 
 export async function saveFlux() {
   const window = BrowserWindow.getFocusedWindow();
@@ -25,7 +32,7 @@ export async function saveFluxAs() {
   const window = BrowserWindow.getFocusedWindow();
   if (window) {
     const { folderPath, files } = await getFiles(window, true);
-    const newPath = await showSaveDialog();
+    const newPath = await showSaveDialog(true);
     if (newPath && newPath !== folderPath) {
       await saveFiles(window, newPath, files);
     }
@@ -79,14 +86,35 @@ async function removeFile(filePath: string): Promise<void> {
 }
 
 /**
+ * Shows the "Open Fiddle" dialog and forwards
+ * the path to the renderer
+ */
+export async function showOpenDialog() {
+  const { filePaths } = await dialog.showOpenDialog({
+    title: 'Open Flux',
+    properties: ['openDirectory'],
+  });
+
+  if (!filePaths || filePaths.length < 1) {
+    return;
+  }
+  app.addRecentDocument(filePaths[0]);
+  const window = BrowserWindow.getFocusedWindow();
+  const files = await openFiddle(filePaths[0]);
+  window?.webContents.send(IpcEvents.FS_OPEN_FLUX, filePaths[0], files);
+}
+
+/**
  * Shows the "Save Fiddle" dialog and returns the path
  */
-export async function showSaveDialog(as?: string): Promise<undefined | string> {
+export async function showSaveDialog(
+  as: boolean = false,
+): Promise<undefined | string> {
   // We want to save to a folder, so we'll use an open dialog here
   const filePaths = dialog.showOpenDialogSync({
     buttonLabel: 'Save here',
     properties: ['openDirectory', 'createDirectory'],
-    title: `Save Fiddle${as ? ` as ${as}` : ''}`,
+    title: `Save Flux ${as ? `As` : ''}`,
   });
 
   if (!Array.isArray(filePaths) || filePaths.length === 0) {
@@ -136,4 +164,14 @@ async function confirmFileOverwrite(filePath: string): Promise<boolean> {
   });
 
   return result.response === 1;
+}
+
+/**
+ * Tries to open a fiddle.
+ */
+export async function openFiddle(
+  filePath: string,
+): Promise<Record<string, string>> {
+  console.log(`openFlux: Asked to open`, filePath);
+  return readFlux(filePath);
 }

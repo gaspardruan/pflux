@@ -1,4 +1,4 @@
-import { EditorId, GridId } from '../interface';
+import { EditorId, EditorValues, GridId } from '../interface';
 
 export function sortGrid(grids: GridId[]) {
   const result: GridId[] = [];
@@ -28,8 +28,8 @@ export function sortGrid(grids: GridId[]) {
   return result;
 }
 
-export function getEmptyContent(): string {
-  return '';
+export function getEmptyContent(filename: string): string {
+  return `# ${filename}\n`;
 }
 
 export function getEditorTitle(id: GridId): string {
@@ -50,4 +50,11 @@ export function getEditorTitle(id: GridId): string {
 
 export function isSupportedFile(filename: string): filename is EditorId {
   return /\.py$/i.test(filename);
+}
+
+export function ensureNotEmpty(got: EditorValues): EditorValues {
+  if (Object.keys(got).length === 0) {
+    got['main.py'] = getEmptyContent('main.py');
+  }
+  return got;
 }

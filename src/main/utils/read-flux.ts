@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import * as fs from 'fs-extra';
 
 import { EditorId, EditorValues } from '../../interface';
-import { isSupportedFile } from '../../utils/editor-utils';
+import { ensureNotEmpty, isSupportedFile } from '../../utils/editor-utils';
 
 /**
  * Reads a Fiddle from a directory.
@@ -12,7 +12,7 @@ import { isSupportedFile } from '../../utils/editor-utils';
  * @returns {Promise<EditorValues>} the loaded Fiddle
  */
 export async function readFlux(folder: string): Promise<EditorValues> {
-  const got: EditorValues = {};
+  let got: EditorValues = {};
 
   try {
     // TODO(dsanders11): Remove options once issue fixed:
@@ -41,6 +41,7 @@ export async function readFlux(folder: string): Promise<EditorValues> {
     console.warn(`Could not read files from ${folder}:`, error);
   }
 
+  got = ensureNotEmpty(got);
   console.log(`Got Fiddle from "${folder}". Found:`, Object.keys(got).sort());
   return got;
 }

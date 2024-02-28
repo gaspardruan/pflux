@@ -264,7 +264,6 @@ export class EditorMosaic {
 
     const { monaco } = window;
     const model = monaco.editor.createModel(value, 'python');
-    console.log(id, value);
     model.updateOptions({ tabSize: 2 });
 
     const backup: EditorBackup = {
@@ -276,7 +275,8 @@ export class EditorMosaic {
     this.backups.set(id, backup);
   }
 
-  public addNewFile(id: EditorId, value: string = getEmptyContent()) {
+  public addNewFile(id: EditorId, _value?: string) {
+    const value = _value || getEmptyContent(id);
     if (this.backups.has(id)) {
       throw new Error(`File "${id}" already exists`);
     }

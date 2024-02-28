@@ -233,9 +233,8 @@ export class AppState {
 
   public async initEditorMosaic() {
     if (this.folderPath) {
-      const values = await window.ElectronFlux.getFiles(this.folderPath);
-      // values为空对象
-      if (Object.keys(values).length !== 0) {
+      if (window.ElectronFlux.pathExists(this.folderPath)) {
+        const values = await window.ElectronFlux.getFiles(this.folderPath);
         this.editorMosaic.set(values);
       } else {
         this.setFolderPathAndName(null, null);

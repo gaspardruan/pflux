@@ -56,6 +56,8 @@ const electronHandler = {
   parseStruct(code: string) {
     return ipcRenderer.invoke(IpcEvents.PARSE_STRUCT, code);
   },
+  pathExists: (path: string) =>
+    ipcRenderer.sendSync(IpcEvents.PATH_EXISTS, path),
   platform: process.platform,
   removeAllListeners(type: FluxEvent) {
     const channel = channelMapping[type];
