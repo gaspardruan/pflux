@@ -177,7 +177,7 @@ export class EditorMosaic {
     }
   }
 
-  private getFirstBackupId() {
+  public getFirstBackupId() {
     if (this.backups.size === 0) {
       throw new Error('No files to load');
     }
@@ -185,7 +185,7 @@ export class EditorMosaic {
   }
 
   // drivered by the clicking file event in the editor.tsx
-  public replaceFile(id: EditorId) {
+  public replaceFile(id: EditorId, remove = false) {
     if (this.mainEditor.id === id) {
       this.mainEditor.editor!.focus();
       return;
@@ -194,14 +194,15 @@ export class EditorMosaic {
     if (!backup) {
       throw new Error(`No backup found for "${id}"`);
     }
-    this.pendingBackup = {
-      model: this.mainEditor.editor!.getModel()!,
-      viewState: this.mainEditor.editor!.saveViewState(),
-      mosaic: this.mainEditor.mosaic!,
-      position: this.mainEditor.editor!.getPosition(),
-      isEdited: this.mainEditor.isEdited,
-      structExpandRecord: this.mainEditor.structExpandRecord!,
-    };
+    if (!remove)
+      this.pendingBackup = {
+        model: this.mainEditor.editor!.getModel()!,
+        viewState: this.mainEditor.editor!.saveViewState(),
+        mosaic: this.mainEditor.mosaic!,
+        position: this.mainEditor.editor!.getPosition(),
+        isEdited: this.mainEditor.isEdited,
+        structExpandRecord: this.mainEditor.structExpandRecord!,
+      };
     this.mainEditor.mosaic = backup.mosaic;
   }
 
@@ -311,11 +312,12 @@ export class EditorMosaic {
   // public hide(id: GridId) {}
 
   public remove(id: EditorId) {
-    if (this.mainEditor.id === id) {
+    if (id === this.mainEditor.id) {
       const nextId = this.getFirstBackupId();
-      this.replaceFile(nextId);
+      this.replaceFile(nextId, true);
+    } else {
+      this.backups.delete(id);
     }
-    this.backups.delete(id);
   }
 
   public value(id: EditorId) {

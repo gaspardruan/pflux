@@ -37,6 +37,9 @@ const electronHandler = {
       }
     }
   },
+  deleteFile(folderPath: string, fileName: string): Promise<boolean> {
+    return ipcRenderer.invoke(IpcEvents.FS_DELETE_FILE, folderPath, fileName);
+  },
   getFiles(folder: string): Promise<EditorValues> {
     return ipcRenderer.invoke(IpcEvents.FS_GET_FILES, folder);
   },

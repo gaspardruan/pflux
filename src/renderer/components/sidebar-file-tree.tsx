@@ -29,7 +29,19 @@ export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
   };
 
   const handleDeleteFile = (fileId: EditorId) => {
-    editorMosaic.remove(fileId);
+    if (appState.folderPath) {
+      window.ElectronFlux.deleteFile(appState.folderPath, fileId)
+        .then((ok) => {
+          if (ok) {
+            editorMosaic.remove(fileId);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      editorMosaic.remove(fileId);
+    }
   };
 
   const addNewFile = (fileId: EditorId) => {

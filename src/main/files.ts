@@ -11,6 +11,17 @@ export function setupFileListener() {
   ipcMain.on(IpcEvents.PATH_EXISTS, (event, p: string) => {
     event.returnValue = fs.existsSync(p);
   });
+
+  ipcMain.handle(
+    IpcEvents.FS_DELETE_FILE,
+    async (_event, folder: string, file: string) => {
+      const fullPath = path.join(folder, file);
+      if (!fs.existsSync(fullPath)) {
+        return true;
+      }
+      return removeFile(fullPath);
+    },
+  );
 }
 
 export async function saveFlux() {
@@ -77,12 +88,14 @@ async function saveFile(filePath: string, content: string): Promise<void> {
  * it fails.
  */
 // eslint-disable-next-line consistent-return, @typescript-eslint/no-unused-vars
-async function removeFile(filePath: string): Promise<void> {
+async function removeFile(filePath: string): Promise<boolean> {
   try {
-    return await fs.remove(filePath);
+    await fs.remove(filePath);
   } catch (error) {
     console.log(`removeFile: Could not remove ${filePath}`, error);
+    return false;
   }
+  return true;
 }
 
 /**

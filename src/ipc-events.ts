@@ -1,5 +1,6 @@
 export enum IpcEvents {
   CLICK_TITLEBAR_MAC = 'CLICK_TITLEBAR_MAC',
+  FS_DELETE_FILE = 'FS_DELETE_FILE',
   FS_GET_FILES = 'FS_GET_FILES',
   FS_OPEN_FLUX = 'FS_OPEN_FLUX',
   GET_FILES = 'GET_FILES',
@@ -18,6 +19,7 @@ export enum IpcEvents {
 
 export const ipcMainEvents = [
   IpcEvents.CLICK_TITLEBAR_MAC,
+  IpcEvents.FS_DELETE_FILE,
   IpcEvents.FS_GET_FILES,
   IpcEvents.PARSE_STRUCT,
   IpcEvents.SAY_HELLO,
