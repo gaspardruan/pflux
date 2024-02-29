@@ -1,11 +1,19 @@
-import { Files } from '../interface';
+import { EditorValues, Files } from '../interface';
 import { AppState } from './state';
 
 export class FileManager {
   constructor(private readonly appState: AppState) {
     this.getFiles = this.getFiles.bind(this);
 
+    window.ElectronFlux.removeAllListeners('open-flux');
     window.ElectronFlux.removeAllListeners('saved-local-flux');
+
+    window.ElectronFlux.addEventListener(
+      'open-flux',
+      (folderPath, folderName, files) => {
+        this.openFlux(folderPath, folderName, files);
+      },
+    );
 
     window.ElectronFlux.addEventListener(
       'saved-local-flux',
@@ -19,6 +27,38 @@ export class FileManager {
     );
 
     window.ElectronFlux.onGetFiles(this.getFiles);
+  }
+
+  public async openFlux(
+    folderPath: string,
+    folderName: string,
+    files: EditorValues,
+  ) {
+    console.log(`FileManager: Asked to open`, folderPath);
+    // eslint-disable-next-line no-useless-return
+    if (
+      !folderPath ||
+      typeof folderPath !== 'string' ||
+      this.appState.folderPath === folderPath
+    )
+      return false;
+
+    const { editorMosaic } = this.appState;
+    if (!editorMosaic.isSaved && !(await this.confirmReplaceUnsaved())) {
+      return false;
+    }
+
+    this.appState.setFolderPathAndName(folderPath, folderName);
+    editorMosaic.set(files);
+
+    return true;
+  }
+
+  private confirmReplaceUnsaved(): Promise<boolean> {
+    return this.appState.showConfirmDialog({
+      label: `Opening this Flux will replace your unsaved changes. Do you want to proceed?`,
+      ok: 'Open',
+    });
   }
 
   /**

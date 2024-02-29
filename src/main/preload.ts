@@ -8,6 +8,7 @@ import { IpcEvents } from '../ipc-events';
 const channelMapping: Record<FluxEvent, IpcEvents> = {
   // 'before-quit': IpcEvents.BEFORE_QUIT,
   'execute-monaco-command': IpcEvents.MONACO_EXECUTE_COMMAND,
+  'open-flux': IpcEvents.FS_OPEN_FLUX,
   'open-settings': IpcEvents.OPEN_SETTINGS,
   'redo-in-editor': IpcEvents.REDO_IN_EDITOR,
   'saved-local-flux': IpcEvents.SAVED_LOCAL_FLUX,

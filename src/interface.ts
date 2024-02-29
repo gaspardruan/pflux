@@ -38,6 +38,7 @@ export type EditorValues = Record<EditorId, string>;
 
 export type FluxEvent =
   | 'execute-monaco-command'
+  | 'open-flux'
   | 'open-settings'
   | 'redo-in-editor'
   | 'saved-local-flux'

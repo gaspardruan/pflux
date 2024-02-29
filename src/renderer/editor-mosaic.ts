@@ -157,13 +157,6 @@ export class EditorMosaic {
   // Set the contents of the mosaic
   public set(valuesIn: EditorValues) {
     this.backups.clear();
-    this.mainEditor = {
-      editor: null,
-      id: null,
-      mosaic: null,
-      isEdited: false,
-      structExpandRecord: new Map(),
-    };
 
     const values = new Map(Object.entries(valuesIn)) as Map<EditorId, string>;
     for (const [id, value] of values) {
@@ -174,8 +167,14 @@ export class EditorMosaic {
   }
 
   private firstLoadFile() {
-    const backup = this.backups.get(this.getFirstBackupId()) as EditorBackup;
-    this.mainEditor.mosaic = backup.mosaic;
+    const id = this.getFirstBackupId();
+    if (id === this.mainEditor.id) {
+      this.setMainEditor(id, this.mainEditor.editor!);
+    } else {
+      const backup = this.backups.get(id) as EditorBackup;
+      this.mainEditor.mosaic = backup.mosaic;
+      this.mainEditor.structExpandRecord = backup.structExpandRecord;
+    }
   }
 
   private getFirstBackupId() {

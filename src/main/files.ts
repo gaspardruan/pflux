@@ -2,7 +2,7 @@ import path from 'path';
 import * as fs from 'fs-extra';
 import { BrowserWindow, app, dialog, ipcMain } from 'electron';
 import { getFiles } from './utils/get-files';
-import { Files } from '../interface';
+import { EditorValues, Files } from '../interface';
 import { IpcEvents } from '../ipc-events';
 import { isSupportedFile } from '../utils/editor-utils';
 import { readFlux } from './utils/read-flux';
@@ -101,7 +101,13 @@ export async function showOpenDialog() {
   app.addRecentDocument(filePaths[0]);
   const window = BrowserWindow.getFocusedWindow();
   const files = await openFiddle(filePaths[0]);
-  window?.webContents.send(IpcEvents.FS_OPEN_FLUX, filePaths[0], files);
+  if (window)
+    window.webContents.send(
+      IpcEvents.FS_OPEN_FLUX,
+      filePaths[0],
+      path.basename(filePaths[0]),
+      files,
+    );
 }
 
 /**
@@ -169,9 +175,7 @@ async function confirmFileOverwrite(filePath: string): Promise<boolean> {
 /**
  * Tries to open a fiddle.
  */
-export async function openFiddle(
-  filePath: string,
-): Promise<Record<string, string>> {
+export async function openFiddle(filePath: string): Promise<EditorValues> {
   console.log(`openFlux: Asked to open`, filePath);
   return readFlux(filePath);
 }
