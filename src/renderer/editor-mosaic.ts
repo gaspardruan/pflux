@@ -35,6 +35,8 @@ export class EditorMosaic {
 
   private pendingBackup: EditorBackup | null = null;
 
+  private state: 'created' | 'updated' | 'default' = 'default';
+
   public get isEditeds() {
     const result = new Map<EditorId, boolean>();
     if (this.mainEditor.id) {
@@ -107,7 +109,11 @@ export class EditorMosaic {
         // eslint-disable-next-line promise/catch-or-return
         window.ElectronFlux.parseStruct(this.fileContent2)
           .then((res) => {
-            if (res.length > 0) this.setStructTree(res);
+            if (
+              res.length > 0 ||
+              (res.length === 0 && this.state === 'created')
+            )
+              this.setStructTree(res);
           })
           .catch(() => {
             // do nothing
@@ -265,8 +271,10 @@ export class EditorMosaic {
     this.mainEditor.editor.focus();
 
     this.fileContent2 = this.mainEditor.editor.getValue();
+    this.state = 'created';
     this.mainEditor.editor.onDidChangeModelContent(() => {
       this.setFileContent2(this.mainEditor.editor!.getValue());
+      this.state = 'updated';
     });
 
     this.focusedGridId = id;
