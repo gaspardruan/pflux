@@ -79,6 +79,7 @@ export class EditorMosaic {
       onAllSaved: action,
       replaceFile: action,
       remove: action,
+      renameFile: action,
       resetLayout: action,
       set: action,
       setFileContent2: action,
@@ -204,6 +205,34 @@ export class EditorMosaic {
         structExpandRecord: this.mainEditor.structExpandRecord!,
       };
     this.mainEditor.mosaic = backup.mosaic;
+  }
+
+  public renameFile(oldId: EditorId, newId: EditorId) {
+    if (oldId === newId) return;
+
+    if (this.backups.has(newId)) {
+      throw new Error(`File "${newId}" already exists`);
+    }
+
+    if (oldId !== this.mainEditor.id) {
+      const backup = this.backups.get(oldId);
+      if (!backup) {
+        throw new Error(`No backup found for "${oldId}"`);
+      }
+      backup.mosaic = newId;
+      this.backups.delete(oldId);
+      this.backups.set(newId, backup);
+    } else {
+      this.backups.set(newId, {
+        model: this.mainEditor.editor!.getModel()!,
+        viewState: this.mainEditor.editor!.saveViewState(),
+        mosaic: newId, // TODO to refactor
+        position: this.mainEditor.editor!.getPosition(),
+        isEdited: this.mainEditor.isEdited,
+        structExpandRecord: this.mainEditor.structExpandRecord!,
+      });
+      this.mainEditor.mosaic = newId;
+    }
   }
 
   // called by the editor.tsx on mounted

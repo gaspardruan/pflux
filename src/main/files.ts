@@ -22,6 +22,18 @@ export function setupFileListener() {
       return removeFile(fullPath);
     },
   );
+
+  ipcMain.handle(
+    IpcEvents.FS_RENAME_FILE,
+    async (_event, folder: string, oldName: string, newName: string) => {
+      const oldPath = path.join(folder, oldName);
+      const newPath = path.join(folder, newName);
+      if (!fs.existsSync(oldPath)) {
+        return false;
+      }
+      return renameFile(oldPath, newPath);
+    },
+  );
 }
 
 export async function saveFlux() {
@@ -87,12 +99,21 @@ async function saveFile(filePath: string, content: string): Promise<void> {
  * Safely attempts to remove a file, doesn't crash the app if
  * it fails.
  */
-// eslint-disable-next-line consistent-return, @typescript-eslint/no-unused-vars
 async function removeFile(filePath: string): Promise<boolean> {
   try {
     await fs.remove(filePath);
   } catch (error) {
     console.log(`removeFile: Could not remove ${filePath}`, error);
+    return false;
+  }
+  return true;
+}
+
+async function renameFile(oldPath: string, newPath: string): Promise<boolean> {
+  try {
+    await fs.rename(oldPath, newPath);
+  } catch (error) {
+    console.log(`renameFile: Could not rename ${oldPath} to ${newPath}`, error);
     return false;
   }
   return true;

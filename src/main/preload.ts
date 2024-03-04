@@ -40,6 +40,18 @@ const electronHandler = {
   deleteFile(folderPath: string, fileName: string): Promise<boolean> {
     return ipcRenderer.invoke(IpcEvents.FS_DELETE_FILE, folderPath, fileName);
   },
+  renameFile(
+    folderPath: string,
+    oldName: string,
+    newName: string,
+  ): Promise<boolean> {
+    return ipcRenderer.invoke(
+      IpcEvents.FS_RENAME_FILE,
+      folderPath,
+      oldName,
+      newName,
+    );
+  },
   getFiles(folder: string): Promise<EditorValues> {
     return ipcRenderer.invoke(IpcEvents.FS_GET_FILES, folder);
   },

@@ -55,6 +55,52 @@ export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
     }
   };
 
+  const renameFile = (oldId: EditorId, newId: EditorId) => {
+    try {
+      editorMosaic.renameFile(oldId, newId);
+    } catch (err) {
+      if (err instanceof Error) {
+        appState.showErrorDialog(err.message);
+      }
+    }
+  };
+
+  const handleRenameFile = async (oldId: EditorId) => {
+    const newId = (await appState.showInputDialog({
+      label: 'Enter New Filename',
+      ok: 'Rename',
+      placeholder: 'New Name',
+    })) as EditorId;
+
+    // eslint-disable-next-line no-useless-return
+    if (!newId) return;
+    if (newId === oldId) return;
+    if (!newId.endsWith('.py')) {
+      appState.showErrorDialog(
+        `Cannot add file "${newId}": Only Python files are supported`,
+      );
+      return;
+    }
+    if (appState.editorMosaic.isEditeds.has(newId)) {
+      appState.showErrorDialog(`File "${newId}" already exists`);
+      return;
+    }
+
+    if (appState.folderPath) {
+      window.ElectronFlux.renameFile(appState.folderPath, oldId, newId)
+        .then((ok) => {
+          if (ok) {
+            renameFile(oldId, newId);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      renameFile(oldId, newId);
+    }
+  };
+
   const resetLayout = () => {
     editorMosaic.resetLayout();
   };
@@ -78,7 +124,7 @@ export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
                   icon="redo"
                   text="Rename"
                   intent="primary"
-                  onClick={() => console.log('Rename Clicked')}
+                  onClick={() => handleRenameFile(fileId)}
                 />
                 <MenuItem
                   disabled={isEditeds.size === 1}
