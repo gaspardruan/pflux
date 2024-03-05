@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, ControlGroup } from '@blueprintjs/core';
+import { Button, ButtonGroup } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
 
 import { AppState } from '../state';
@@ -9,6 +9,7 @@ interface CommandsProps {
 
 export const Commands = observer(({ appState }: CommandsProps) => {
   const { title } = appState;
+  const { cursorPosition, cursorWord } = appState.editorMosaic;
   // eslint-disable-next-line no-undef
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
@@ -60,11 +61,9 @@ export const Commands = observer(({ appState }: CommandsProps) => {
       {window.ElectronFlux.platform === 'darwin' ? (
         <div className="title">{title}</div>
       ) : undefined}
-      <div>
-        <ControlGroup fill>
-          <Button minimal title="Reset Layout" icon="page-layout" />
-          <Button minimal title="Split Column" icon="split-columns" />
-        </ControlGroup>
+      <div className="plain-text">
+        Line {cursorPosition ? cursorPosition.lineNumber : undefined}, Word:{' '}
+        {cursorWord ? cursorWord.word : undefined}
       </div>
     </div>
   );

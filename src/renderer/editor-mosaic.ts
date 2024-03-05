@@ -68,11 +68,16 @@ export class EditorMosaic {
 
   public structTree: Array<StructNodeInfo> = [];
 
+  public cursorPosition: MonacoType.Position | null = null;
+  public cursorWord: MonacoType.editor.IWordAtPosition | null = null;
+
   constructor() {
     makeObservable(this, {
       addFile: action,
       addNewFile: action,
       backups: observable,
+      cursorPosition: observable,
+      cursorWord: observable,
       fileContent2: observable,
       focusedGridId: observable,
       isEditeds: computed,
@@ -84,6 +89,7 @@ export class EditorMosaic {
       renameFile: action,
       resetLayout: action,
       set: action,
+      setCursorWord: action,
       setFileContent2: action,
       setFocusedGridId: action,
       setIsEdited: action,
@@ -155,6 +161,14 @@ export class EditorMosaic {
     if (this.mainEditor.id === id) {
       this.mainEditor.editor!.focus();
     }
+  }
+
+  public setCursorWord(
+    position: MonacoType.Position,
+    word: MonacoType.editor.IWordAtPosition | null,
+  ) {
+    this.cursorPosition = position;
+    this.cursorWord = word;
   }
 
   public resetLayout() {
@@ -275,6 +289,21 @@ export class EditorMosaic {
     this.mainEditor.editor.onDidChangeModelContent(() => {
       this.setFileContent2(this.mainEditor.editor!.getValue());
       this.state = 'updated';
+    });
+
+    const pos = this.mainEditor.editor.getPosition();
+    if (pos) {
+      this.setCursorWord(
+        pos,
+        this.mainEditor.editor.getModel()!.getWordAtPosition(pos),
+      );
+    }
+    this.mainEditor.editor.onDidChangeCursorPosition((e) => {
+      this.setCursorWord(
+        e.position,
+        this.mainEditor.editor!.getModel()!.getWordAtPosition(e.position),
+      );
+      console.log(this.cursorPosition, this.cursorWord);
     });
 
     this.focusedGridId = id;
