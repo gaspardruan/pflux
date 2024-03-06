@@ -63,18 +63,15 @@ export class AppState {
   // FileTree
   public fileTreeState: 'add' | 'default' = 'default';
 
-  // Header
-  public sliceActive = false;
-
   // Slice Parse
-  public lineCollection: Array<number> | null = null;
-  public tempLineDecorations: MonacoType.editor.IEditorDecorationsCollection | null =
-    null;
+  public extractActive = false;
 
   constructor() {
     makeObservable(this, {
+      clearSlice: action,
       counter: observable,
       editorMosaic: observable,
+      extractActive: observable,
       fileTreeState: observable,
       fontFamily: observable,
       fontSize: observable,
@@ -88,19 +85,19 @@ export class AppState {
       isHeaderFocusable: computed,
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
+      setExtractActive: observable,
       setFileTreeState: action,
       setFolderPathAndName: action,
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
-      setSliceActive: action,
       setTheme: action,
       showConfirmDialog: action,
       showErrorDialog: action,
       showGenericDialog: action,
       showInfoDialog: action,
       showInputDialog: action,
-      sliceActive: observable,
+      sliceActive: computed,
       theme: observable,
       title: computed,
       toggleSystemTheme: action,
@@ -108,7 +105,6 @@ export class AppState {
 
     // Bind the method to the instance
     this.increment = this.increment.bind(this);
-    this.setSliceActive = this.setSliceActive.bind(this);
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
 
@@ -138,6 +134,10 @@ export class AppState {
     return !this.isSettingsShowing;
   }
 
+  get sliceActive(): boolean {
+    return this.editorMosaic.mainEditor.lineCollection!.length > 0;
+  }
+
   public increment() {
     this.counter += 1;
   }
@@ -163,8 +163,8 @@ export class AppState {
     this.isGenericDialogShowing = isShowing;
   }
 
-  public setSliceActive(isActive: boolean) {
-    this.sliceActive = isActive;
+  public setExtractActive(isActive: boolean) {
+    this.extractActive = isActive;
   }
 
   public async showGenericDialog(
@@ -277,16 +277,15 @@ export class AppState {
         if (res.length === 0)
           this.showErrorDialog('Please select a variable to slice.');
         else {
-          this.lineCollection = res;
+          this.editorMosaic.setLineCollection(res);
           const decorations = res.map((line) => {
             return {
               range: new MonacoType.Range(line, 1, line, 2),
               options: { blockClassName: 'sliced-line-highlight' },
             };
           });
-          this.tempLineDecorations =
+          this.editorMosaic.tempLineDecorations =
             em.mainEditor.editor!.createDecorationsCollection(decorations);
-          this.setSliceActive(true);
         }
       })
       .catch(() => {
@@ -295,12 +294,12 @@ export class AppState {
   }
 
   public clearSlice() {
-    this.lineCollection = null;
-    if (this.tempLineDecorations) {
-      this.tempLineDecorations.clear();
-      this.tempLineDecorations = null;
+    const em = this.editorMosaic;
+    this.editorMosaic.mainEditor.lineCollection = [];
+    if (em.tempLineDecorations) {
+      em.tempLineDecorations.clear();
+      em.tempLineDecorations = null;
     }
-    this.setSliceActive(false);
   }
 
   /**

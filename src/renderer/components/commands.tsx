@@ -51,7 +51,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             onClick={handleSliceClick}
           />
           <Button
-            icon="two-columns"
+            icon="drawer-left"
             text="Extract"
             onClick={() => console.log('Slice Extract clicked.')}
           />

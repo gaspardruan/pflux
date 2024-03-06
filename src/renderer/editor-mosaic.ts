@@ -14,6 +14,7 @@ interface EditorBackup {
   mosaic: MosaicNode<GridId>;
   isEdited: boolean;
   structExpandRecord: Map<string, boolean>;
+  lineCollection: Array<number>;
 }
 
 export class EditorMosaic {
@@ -23,12 +24,14 @@ export class EditorMosaic {
     mosaic: MosaicNode<GridId> | null;
     isEdited: boolean;
     structExpandRecord: Map<string, boolean> | null;
+    lineCollection: Array<number> | null;
   } = {
     editor: null,
     id: null,
     mosaic: null,
     isEdited: false,
     structExpandRecord: null,
+    lineCollection: null,
   };
 
   public backups = new Map<EditorId, EditorBackup>();
@@ -71,6 +74,9 @@ export class EditorMosaic {
   public cursorPosition: MonacoType.Position | null = null;
   public cursorWord: MonacoType.editor.IWordAtPosition | null = null;
 
+  public tempLineDecorations: MonacoType.editor.IEditorDecorationsCollection | null =
+    null;
+
   constructor() {
     makeObservable(this, {
       addFile: action,
@@ -93,6 +99,7 @@ export class EditorMosaic {
       setFileContent2: action,
       setFocusedGridId: action,
       setIsEdited: action,
+      setLineCollection: action,
       setMainEditor: action,
       setStructTree: action,
       setStructExpand: action,
@@ -152,6 +159,10 @@ export class EditorMosaic {
     this.mainEditor.structExpandRecord!.set(id, val);
   }
 
+  public setLineCollection(val: Array<number>) {
+    this.mainEditor.lineCollection = val;
+  }
+
   public updateMosaic(mosaic: MosaicNode<GridId> | null) {
     this.mainEditor.mosaic = mosaic;
   }
@@ -195,6 +206,7 @@ export class EditorMosaic {
       const backup = this.backups.get(id) as EditorBackup;
       this.mainEditor.mosaic = backup.mosaic;
       this.mainEditor.structExpandRecord = backup.structExpandRecord;
+      this.mainEditor.lineCollection = backup.lineCollection;
     }
   }
 
@@ -223,6 +235,7 @@ export class EditorMosaic {
         position: this.mainEditor.editor!.getPosition(),
         isEdited: this.mainEditor.isEdited,
         structExpandRecord: this.mainEditor.structExpandRecord!,
+        lineCollection: this.mainEditor.lineCollection!,
       };
     this.mainEditor.mosaic = backup.mosaic;
   }
@@ -250,6 +263,7 @@ export class EditorMosaic {
         position: this.mainEditor.editor!.getPosition(),
         isEdited: this.mainEditor.isEdited,
         structExpandRecord: this.mainEditor.structExpandRecord!,
+        lineCollection: this.mainEditor.lineCollection!,
       });
       this.mainEditor.mosaic = newId;
     }
@@ -279,6 +293,17 @@ export class EditorMosaic {
     }
     this.mainEditor.isEdited = backup.isEdited;
     this.mainEditor.structExpandRecord = backup.structExpandRecord;
+    this.mainEditor.lineCollection = backup.lineCollection;
+    if (this.mainEditor.lineCollection.length > 0) {
+      const decorations = this.mainEditor.lineCollection.map((line) => {
+        return {
+          range: new MonacoType.Range(line, 1, line, 2),
+          options: { blockClassName: 'sliced-line-highlight' },
+        };
+      });
+      this.tempLineDecorations =
+        this.mainEditor.editor!.createDecorationsCollection(decorations);
+    }
     if (!this.mainEditor.isEdited) {
       this.observeEdit();
     }
@@ -336,6 +361,7 @@ export class EditorMosaic {
       mosaic: id,
       isEdited,
       structExpandRecord: new Map(),
+      lineCollection: [],
     };
     this.backups.set(id, backup);
   }
