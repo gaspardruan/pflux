@@ -71,6 +71,9 @@ export class EditorMosaic {
   public cursorPosition: MonacoType.Position | null = null;
   public cursorWord: MonacoType.editor.IWordAtPosition | null = null;
 
+  // Slice Parse
+  public lineCollection: Array<number> | null = null;
+
   constructor() {
     makeObservable(this, {
       addFile: action,
@@ -103,6 +106,7 @@ export class EditorMosaic {
     });
 
     this.setStructExpand = this.setStructExpand.bind(this);
+    this.parseSlice = this.parseSlice.bind(this);
 
     reaction(
       () => this.mainEditor.mosaic,
@@ -303,7 +307,6 @@ export class EditorMosaic {
         e.position,
         this.mainEditor.editor!.getModel()!.getWordAtPosition(e.position),
       );
-      console.log(this.cursorPosition, this.cursorWord);
     });
 
     this.focusedGridId = id;
@@ -384,6 +387,23 @@ export class EditorMosaic {
     } else {
       this.backups.delete(id);
     }
+  }
+
+  public parseSlice() {
+    const loc = {
+      first_line: this.cursorPosition!.lineNumber,
+      last_line: this.cursorPosition!.lineNumber,
+      first_column: this.cursorWord!.startColumn - 1,
+      last_column: this.cursorWord!.endColumn - 1,
+    };
+    window.ElectronFlux.parseSlice(this.fileContent2, loc)
+      .then((res) => {
+        this.lineCollection = res;
+        console.log(res);
+      })
+      .catch(() => {
+        // do nothing
+      });
   }
 
   public value(id: EditorId) {

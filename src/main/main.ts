@@ -25,6 +25,7 @@ import { setupStructParse } from './core/struct-parse';
 import { IpcEvents } from '../ipc-events';
 import { setupContent } from './content';
 import { setupFileListener } from './files';
+import { setupSliceParse } from './core/slice-parse';
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -50,6 +51,7 @@ export async function onReady() {
   setupFileListener();
 
   setupStructParse();
+  setupSliceParse();
 
   createWindow();
 }

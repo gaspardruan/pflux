@@ -1,6 +1,7 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { Location } from '@msrvida/python-program-analysis';
 
 import { EditorValues, Files, FluxEvent } from '../interface';
 import { IpcEvents } from '../ipc-events';
@@ -71,6 +72,9 @@ const electronHandler = {
   },
   parseStruct(code: string) {
     return ipcRenderer.invoke(IpcEvents.PARSE_STRUCT, code);
+  },
+  parseSlice(code: string, location: Location) {
+    return ipcRenderer.invoke(IpcEvents.PARSE_SLICE, code, location);
   },
   pathExists: (path: string) =>
     ipcRenderer.sendSync(IpcEvents.PATH_EXISTS, path),

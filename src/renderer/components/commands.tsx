@@ -9,7 +9,7 @@ interface CommandsProps {
 
 export const Commands = observer(({ appState }: CommandsProps) => {
   const { title } = appState;
-  const { cursorPosition, cursorWord } = appState.editorMosaic;
+  const { cursorPosition, cursorWord, parseSlice } = appState.editorMosaic;
   // eslint-disable-next-line no-undef
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
@@ -35,14 +35,20 @@ export const Commands = observer(({ appState }: CommandsProps) => {
         </ButtonGroup>
         <ButtonGroup fill>
           <Button
+            disabled={!cursorPosition || !cursorWord}
             icon="waves"
             text="Slice"
-            onClick={() => console.log('Slice clicked.')}
+            onClick={parseSlice}
           />
           <Button
             icon="two-columns"
             text="Extract"
             onClick={() => console.log('Slice Extract clicked.')}
+          />
+          <Button
+            icon="reset"
+            text="Clear"
+            onClick={() => console.log('Clean clicked')}
           />
         </ButtonGroup>
         <ButtonGroup fill>
