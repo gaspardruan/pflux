@@ -8,12 +8,23 @@ interface CommandsProps {
 }
 
 export const Commands = observer(({ appState }: CommandsProps) => {
-  const { title } = appState;
-  const { cursorPosition, cursorWord, parseSlice } = appState.editorMosaic;
+  const { title, sliceActive, setSliceActive } = appState;
+  const { cursorPosition, cursorWord, parseSlice, clearSlice } =
+    appState.editorMosaic;
   // eslint-disable-next-line no-undef
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
       window.ElectronFlux.macTitlebarClicked();
+    }
+  };
+
+  const handleSliceClick = () => {
+    if (sliceActive) {
+      setSliceActive(false);
+      clearSlice();
+    } else {
+      setSliceActive(true);
+      parseSlice();
     }
   };
   return (
@@ -35,20 +46,16 @@ export const Commands = observer(({ appState }: CommandsProps) => {
         </ButtonGroup>
         <ButtonGroup fill>
           <Button
+            active={sliceActive}
             disabled={!cursorPosition || !cursorWord}
             icon="waves"
             text="Slice"
-            onClick={parseSlice}
+            onClick={handleSliceClick}
           />
           <Button
             icon="two-columns"
             text="Extract"
             onClick={() => console.log('Slice Extract clicked.')}
-          />
-          <Button
-            icon="reset"
-            text="Clear"
-            onClick={() => console.log('Clean clicked')}
           />
         </ButtonGroup>
         <ButtonGroup fill>

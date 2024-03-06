@@ -63,6 +63,9 @@ export class AppState {
   // FileTree
   public fileTreeState: 'add' | 'default' = 'default';
 
+  // Header
+  public sliceActive = false;
+
   constructor() {
     makeObservable(this, {
       counter: observable,
@@ -85,12 +88,14 @@ export class AppState {
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
+      setSliceActive: action,
       setTheme: action,
       showConfirmDialog: action,
       showErrorDialog: action,
       showGenericDialog: action,
       showInfoDialog: action,
       showInputDialog: action,
+      sliceActive: observable,
       theme: observable,
       title: computed,
       toggleSystemTheme: action,
@@ -98,6 +103,7 @@ export class AppState {
 
     // Bind the method to the instance
     this.increment = this.increment.bind(this);
+    this.setSliceActive = this.setSliceActive.bind(this);
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
@@ -148,6 +154,10 @@ export class AppState {
 
   public setGenericDialogShowing(isShowing: boolean) {
     this.isGenericDialogShowing = isShowing;
+  }
+
+  public setSliceActive(isActive: boolean) {
+    this.sliceActive = isActive;
   }
 
   public async showGenericDialog(

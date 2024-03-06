@@ -1,7 +1,7 @@
-@import (inline) "@blueprintjs/core/lib/css/blueprint.css";
-@import (inline) "@blueprintjs/select/lib/css/blueprint-select.css";
-@import (inline) "@blueprintjs/icons/lib/css/blueprint-icons.css";
-@import "@blueprintjs/core/lib/less/variables.less";
+@import (inline) '@blueprintjs/core/lib/css/blueprint.css';
+@import (inline) '@blueprintjs/select/lib/css/blueprint-select.css';
+@import (inline) '@blueprintjs/icons/lib/css/blueprint-icons.css';
+@import '@blueprintjs/core/lib/less/variables.less';
 
 // Override some of the colors
 .flux.bp5-dark {
@@ -14,8 +14,12 @@
     fill: @background-1;
   }
 
-  .bp5-button:not([class*="bp5-intent-"]) {
+  .bp5-button:not([class*='bp5-intent-']) {
     background-color: @background-1;
+  }
+
+  .bp5-button:not([class*='bp5-intent-']).bp5-active {
+    background-color: @background-2;
   }
 
   .bp5-button.bp5-minimal {

@@ -107,6 +107,7 @@ export class EditorMosaic {
 
     this.setStructExpand = this.setStructExpand.bind(this);
     this.parseSlice = this.parseSlice.bind(this);
+    this.clearSlice = this.clearSlice.bind(this);
 
     reaction(
       () => this.mainEditor.mosaic,
@@ -404,6 +405,11 @@ export class EditorMosaic {
       .catch(() => {
         // do nothing
       });
+  }
+
+  public clearSlice() {
+    this.lineCollection = null;
+    console.log('clear slice');
   }
 
   public value(id: EditorId) {
