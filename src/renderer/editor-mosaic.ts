@@ -71,11 +71,6 @@ export class EditorMosaic {
   public cursorPosition: MonacoType.Position | null = null;
   public cursorWord: MonacoType.editor.IWordAtPosition | null = null;
 
-  // Slice Parse
-  public lineCollection: Array<number> | null = null;
-  public tempLineDecorations: MonacoType.editor.IEditorDecorationsCollection | null =
-    null;
-
   constructor() {
     makeObservable(this, {
       addFile: action,
@@ -108,8 +103,6 @@ export class EditorMosaic {
     });
 
     this.setStructExpand = this.setStructExpand.bind(this);
-    this.parseSlice = this.parseSlice.bind(this);
-    this.clearSlice = this.clearSlice.bind(this);
 
     reaction(
       () => this.mainEditor.mosaic,
@@ -390,40 +383,6 @@ export class EditorMosaic {
     } else {
       this.backups.delete(id);
     }
-  }
-
-  public parseSlice() {
-    const loc = {
-      first_line: this.cursorPosition!.lineNumber,
-      last_line: this.cursorPosition!.lineNumber,
-      first_column: this.cursorWord!.startColumn - 1,
-      last_column: this.cursorWord!.endColumn - 1,
-    };
-    window.ElectronFlux.parseSlice(this.fileContent2, loc)
-      .then((res: number[]) => {
-        this.lineCollection = res;
-        const decorations = res.map((line) => {
-          return {
-            range: new MonacoType.Range(line, 1, line, 2),
-            options: { blockClassName: 'sliced-line-highlight' },
-          };
-        });
-        this.tempLineDecorations =
-          this.mainEditor.editor!.createDecorationsCollection(decorations);
-        console.log(res);
-      })
-      .catch(() => {
-        // do nothing
-      });
-  }
-
-  public clearSlice() {
-    this.lineCollection = null;
-    if (this.tempLineDecorations) {
-      this.tempLineDecorations.clear();
-      this.tempLineDecorations = null;
-    }
-    console.log('clear slice');
   }
 
   public value(id: EditorId) {

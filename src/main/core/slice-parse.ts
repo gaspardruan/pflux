@@ -109,6 +109,9 @@ export function sliceVar(
 
   let isLine = false;
   const seedNode = findSeedStatement(seedLocation, cfg)!;
+  if (!seedNode) {
+    throw new Error('Seed statement not found');
+  }
   if (seedNode.type === ASSIGN) {
     if (
       seedNode.targets.some((target) =>
@@ -187,7 +190,7 @@ function findSeedStatement(seedLocation: Location, cfg: ControlFlowGraph) {
 }
 
 export function findSeedName(seedNode: SyntaxNode, seedLocation: Location) {
-  let name = 'not found';
+  let name = '';
   walk(seedNode, {
     onEnterNode: (node) => {
       if (node.type === NAME && isSameLocation(node.location!, seedLocation)) {
@@ -195,6 +198,7 @@ export function findSeedName(seedNode: SyntaxNode, seedLocation: Location) {
       }
     },
   });
+  if (name === '') throw new Error('Please choose a variable');
   return name;
 }
 
@@ -285,7 +289,11 @@ export function setupSliceParse() {
   ipcMain.handle(
     IpcEvents.PARSE_SLICE,
     (_event, code: string, location: Location) => {
-      return getLineArray(code, location);
+      try {
+        return getLineArray(code, location);
+      } catch (e) {
+        return [];
+      }
     },
   );
 }

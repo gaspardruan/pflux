@@ -6,7 +6,7 @@ import {
   observable,
   when,
 } from 'mobx';
-
+import * as MonacoType from 'monaco-editor';
 import { EditorMosaic } from './editor-mosaic';
 import {
   GenericDialogOptions,
@@ -66,6 +66,11 @@ export class AppState {
   // Header
   public sliceActive = false;
 
+  // Slice Parse
+  public lineCollection: Array<number> | null = null;
+  public tempLineDecorations: MonacoType.editor.IEditorDecorationsCollection | null =
+    null;
+
   constructor() {
     makeObservable(this, {
       counter: observable,
@@ -104,6 +109,8 @@ export class AppState {
     // Bind the method to the instance
     this.increment = this.increment.bind(this);
     this.setSliceActive = this.setSliceActive.bind(this);
+    this.parseSlice = this.parseSlice.bind(this);
+    this.clearSlice = this.clearSlice.bind(this);
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
@@ -255,6 +262,45 @@ export class AppState {
       const { files } = await import('../utils/example-file');
       this.editorMosaic.set(files);
     }
+  }
+
+  public parseSlice() {
+    const em = this.editorMosaic;
+    const loc = {
+      first_line: em.cursorPosition!.lineNumber,
+      last_line: em.cursorPosition!.lineNumber,
+      first_column: em.cursorWord!.startColumn - 1,
+      last_column: em.cursorWord!.endColumn - 1,
+    };
+    window.ElectronFlux.parseSlice(em.fileContent2, loc)
+      .then((res: number[]) => {
+        if (res.length === 0)
+          this.showErrorDialog('Please select a variable to slice.');
+        else {
+          this.lineCollection = res;
+          const decorations = res.map((line) => {
+            return {
+              range: new MonacoType.Range(line, 1, line, 2),
+              options: { blockClassName: 'sliced-line-highlight' },
+            };
+          });
+          this.tempLineDecorations =
+            em.mainEditor.editor!.createDecorationsCollection(decorations);
+          this.setSliceActive(true);
+        }
+      })
+      .catch(() => {
+        // do nothing
+      });
+  }
+
+  public clearSlice() {
+    this.lineCollection = null;
+    if (this.tempLineDecorations) {
+      this.tempLineDecorations.clear();
+      this.tempLineDecorations = null;
+    }
+    this.setSliceActive(false);
   }
 
   /**

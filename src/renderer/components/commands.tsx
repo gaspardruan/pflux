@@ -8,9 +8,8 @@ interface CommandsProps {
 }
 
 export const Commands = observer(({ appState }: CommandsProps) => {
-  const { title, sliceActive, setSliceActive } = appState;
-  const { cursorPosition, cursorWord, parseSlice, clearSlice } =
-    appState.editorMosaic;
+  const { title, sliceActive, parseSlice, clearSlice } = appState;
+  const { cursorPosition, cursorWord } = appState.editorMosaic;
   // eslint-disable-next-line no-undef
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
@@ -20,12 +19,11 @@ export const Commands = observer(({ appState }: CommandsProps) => {
 
   const handleSliceClick = () => {
     if (sliceActive) {
-      setSliceActive(false);
       clearSlice();
     } else {
-      setSliceActive(true);
       parseSlice();
     }
+    // else appState.showErrorDialog('Please select a variable to slice.');
   };
   return (
     <div
