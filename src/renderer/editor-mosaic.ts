@@ -73,6 +73,8 @@ export class EditorMosaic {
 
   // Slice Parse
   public lineCollection: Array<number> | null = null;
+  public tempLineDecorations: MonacoType.editor.IEditorDecorationsCollection | null =
+    null;
 
   constructor() {
     makeObservable(this, {
@@ -398,8 +400,16 @@ export class EditorMosaic {
       last_column: this.cursorWord!.endColumn - 1,
     };
     window.ElectronFlux.parseSlice(this.fileContent2, loc)
-      .then((res) => {
+      .then((res: number[]) => {
         this.lineCollection = res;
+        const decorations = res.map((line) => {
+          return {
+            range: new MonacoType.Range(line, 1, line, 2),
+            options: { blockClassName: 'sliced-line-highlight' },
+          };
+        });
+        this.tempLineDecorations =
+          this.mainEditor.editor!.createDecorationsCollection(decorations);
         console.log(res);
       })
       .catch(() => {
@@ -409,6 +419,10 @@ export class EditorMosaic {
 
   public clearSlice() {
     this.lineCollection = null;
+    if (this.tempLineDecorations) {
+      this.tempLineDecorations.clear();
+      this.tempLineDecorations = null;
+    }
     console.log('clear slice');
   }
 

@@ -47,7 +47,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
         <ButtonGroup fill>
           <Button
             active={sliceActive}
-            disabled={!cursorPosition || !cursorWord}
+            disabled={(!cursorPosition || !cursorWord) && !sliceActive}
             icon="waves"
             text="Slice"
             onClick={handleSliceClick}
