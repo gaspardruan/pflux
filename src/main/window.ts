@@ -2,6 +2,7 @@ import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
 
 import { resolveHtmlPath } from './util';
+import { createContextMenu } from './context-menu';
 
 /**
  * Get default main window options
@@ -47,6 +48,12 @@ export async function createWindow() {
       mainWindow.minimize();
     } else {
       mainWindow.show();
+    }
+  });
+
+  mainWindow.webContents.once('dom-ready', () => {
+    if (mainWindow) {
+      createContextMenu(mainWindow);
     }
   });
 

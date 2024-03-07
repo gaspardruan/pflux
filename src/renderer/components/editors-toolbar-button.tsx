@@ -9,14 +9,14 @@ import {
   MosaicWindowContext,
 } from 'react-mosaic-component';
 
-import { EditorId } from '../../interface';
+import { GridId } from '../../interface';
 import { AppState } from '../state';
 
 interface ToolbarButtonProps {
   // eslint-disable-next-line react/no-unused-prop-types
   appState: AppState;
   // eslint-disable-next-line react/no-unused-prop-types
-  id: EditorId;
+  id: GridId;
 }
 
 // TODO: refactor to use hooks

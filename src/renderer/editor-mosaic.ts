@@ -2,7 +2,13 @@ import * as MonacoType from 'monaco-editor';
 import { action, computed, makeObservable, observable, reaction } from 'mobx';
 import { MosaicDirection, MosaicNode, getLeaves } from 'react-mosaic-component';
 
-import { EditorId, EditorValues, GridId, StructNodeInfo } from '../interface';
+import {
+  EditorId,
+  EditorValues,
+  GridId,
+  SliceId,
+  StructNodeInfo,
+} from '../interface';
 import { getEmptyContent, sortGrid } from '../utils/editor-utils';
 
 export type Editor = MonacoType.editor.IStandaloneCodeEditor;
@@ -20,6 +26,7 @@ interface EditorBackup {
 export class EditorMosaic {
   public mainEditor: {
     editor: Editor | null;
+    sliceEditor: Editor | null;
     id: EditorId | null;
     mosaic: MosaicNode<GridId> | null;
     isEdited: boolean;
@@ -27,6 +34,7 @@ export class EditorMosaic {
     lineCollection: Array<number> | null;
   } = {
     editor: null,
+    sliceEditor: null,
     id: null,
     mosaic: null,
     isEdited: false,
@@ -84,6 +92,7 @@ export class EditorMosaic {
       backups: observable,
       cursorPosition: observable,
       cursorWord: observable,
+      disposeSliceEditor: action,
       fileContent2: observable,
       focusedGridId: observable,
       hide: action,
@@ -102,6 +111,7 @@ export class EditorMosaic {
       setIsEdited: action,
       setLineCollection: action,
       setMainEditor: action,
+      setSliceEditor: action,
       setStructTree: action,
       setStructExpand: action,
       setVisible: action,
@@ -110,7 +120,9 @@ export class EditorMosaic {
       updateMosaic: action,
     });
 
+    this.disposeSliceEditor = this.disposeSliceEditor.bind(this);
     this.hide = this.hide.bind(this);
+    this.replaceSliceEditorModel = this.replaceSliceEditorModel.bind(this);
     this.setStructExpand = this.setStructExpand.bind(this);
     this.show = this.show.bind(this);
     this.setVisible = this.setVisible.bind(this);
@@ -337,6 +349,30 @@ export class EditorMosaic {
     this.focusedGridId = id;
   }
 
+  public setSliceEditor(id: SliceId, editor: Editor) {
+    this.mainEditor.sliceEditor = editor;
+    editor.setModel(this.getSlicedCodeModel());
+  }
+
+  public replaceSliceEditorModel() {
+    if (this.mainEditor.sliceEditor)
+      this.mainEditor.sliceEditor!.setModel(this.getSlicedCodeModel());
+  }
+
+  public disposeSliceEditor() {
+    this.mainEditor.sliceEditor = null;
+  }
+
+  private getSlicedCodeModel() {
+    const codes = [];
+    if (this.mainEditor.editor && this.mainEditor.lineCollection!.length > 0) {
+      for (const line of this.mainEditor.lineCollection!) {
+        codes.push(this.mainEditor.editor.getModel()!.getLineContent(line));
+      }
+    }
+    return window.monaco.editor.createModel(codes.join('\n'), 'python');
+  }
+
   // private setEditorFromBackup(backup: EditorBackup) {
   //   this.ignoreEdit();
   //   if (backup.viewState) {
@@ -384,11 +420,8 @@ export class EditorMosaic {
   }
 
   public setVisible(_visible: GridId[]) {
-    console.log(_visible);
     const visible = sortGrid([...new Set(_visible)]);
-    console.log(visible);
     const mosaic = this.createMosaic(visible);
-    console.log(mosaic);
     this.mainEditor.mosaic = mosaic;
   }
 

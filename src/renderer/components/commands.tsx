@@ -12,7 +12,8 @@ interface CommandsProps {
 export const Commands = observer(({ appState }: CommandsProps) => {
   const { title, sliceActive, parseSlice, clearSlice, sliceExtractActive } =
     appState;
-  const { cursorPosition, cursorWord, show, hide } = appState.editorMosaic;
+  const { cursorPosition, cursorWord, show, hide, disposeSliceEditor } =
+    appState.editorMosaic;
   const { id } = appState.editorMosaic.mainEditor;
   // eslint-disable-next-line no-undef
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -32,6 +33,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
   const handleExtractClick = () => {
     if (sliceExtractActive) {
       hide(getGridId(WinType.SLICE, id!));
+      disposeSliceEditor();
     } else {
       show(getGridId(WinType.SLICE, id!));
     }

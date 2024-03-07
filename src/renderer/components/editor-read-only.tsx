@@ -1,12 +1,12 @@
 import { memo, useEffect, useRef } from 'react';
 import * as MonacoType from 'monaco-editor';
 
-import { EditorId, GridId } from '../../interface';
+import { SliceId, GridId } from '../../interface';
 import { AppState } from '../state';
 
 interface EditorProps {
   readonly appState: AppState;
-  readonly id: EditorId;
+  readonly id: SliceId;
   readonly monaco: typeof MonacoType;
   monacoOptions: MonacoType.editor.IEditorOptions;
   // eslint-disable-next-line react/require-default-props
@@ -19,7 +19,7 @@ const areEqual = (_prevProps: EditorProps, _nextProps: EditorProps) => {
   return true;
 };
 
-export const Editor = memo(
+export const EditorReadOnly = memo(
   ({
     appState,
     id,
@@ -64,15 +64,13 @@ export const Editor = memo(
       ) => {
         const { editorMosaic } = appState;
 
-        editorMosaic.setMainEditor(id, _editor);
+        editorMosaic.setSliceEditor(id, _editor);
 
         // And notify others
         if (editorDidMount) {
           editorDidMount(_editor);
         }
 
-        // Click file tree, if the file is hidden, focus it
-        // Because you can't focus immediately after redisplay, you must wait until the mount is complete
         if (editorMosaic.focusedGridId === id) {
           _editor.focus();
           setFocused(id);
@@ -96,6 +94,7 @@ export const Editor = memo(
               fontSize,
               contextmenu: false,
               model: null,
+              readOnly: true,
               ...monacoOptions,
             },
             {

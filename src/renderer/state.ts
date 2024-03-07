@@ -288,6 +288,7 @@ export class AppState {
           this.showErrorDialog('Please select a variable to slice.');
         else {
           this.editorMosaic.setLineCollection(res);
+          this.editorMosaic.replaceSliceEditorModel();
           const decorations = res.map((line) => {
             return {
               range: new MonacoType.Range(line, 1, line, 2),

@@ -10,8 +10,9 @@ import {
 } from 'react-mosaic-component';
 
 import { Editor } from './editor';
+import { EditorReadOnly } from './editor-read-only';
 import { MaximizeButton, RemoveButton } from './editors-toolbar-button';
-import { EditorId, GridId } from '../../interface';
+import { EditorId, GridId, SliceId } from '../../interface';
 import { AppState } from '../state';
 import { getEditorTitle } from '../../utils/editor-utils';
 import { getAtPath, setAtPath } from '../../utils/js-path';
@@ -146,7 +147,7 @@ export const Editors = observer(({ appState }: EditorsProps) => {
    */
   const renderToolbar = (
     { title }: MosaicWindowProps<GridId>,
-    id: EditorId,
+    id: GridId,
     // eslint-disable-next-line no-undef
   ): React.JSX.Element => {
     return (
@@ -187,6 +188,26 @@ export const Editors = observer(({ appState }: EditorsProps) => {
   };
 
   /**
+   * Render an editor
+   *
+   * @param {SliceId} id
+   * @returns {(JSX.Element | null)}
+   * @memberof Editors
+   */
+  // eslint-disable-next-line no-undef
+  const renderSliceEditor = (id: SliceId): React.JSX.Element | null => {
+    return (
+      <EditorReadOnly
+        id={id}
+        monaco={monaco}
+        appState={appState}
+        monacoOptions={defaultMonacoOptions}
+        setFocused={setFocused}
+      />
+    );
+  };
+
+  /**
    * Renders a Mosaic tile
    *
    * @param {GridId} id
@@ -194,19 +215,35 @@ export const Editors = observer(({ appState }: EditorsProps) => {
    * @returns {JSX.Element}
    */
   const renderTile = (
-    id: GridId,
+    _id: GridId,
     path: Array<MosaicBranch>,
     // eslint-disable-next-line no-undef
   ): React.JSX.Element => {
-    const title = getEditorTitle(id);
-    if (id.endsWith('.py')) {
+    const title = getEditorTitle(_id);
+    if (_id.endsWith('.py')) {
+      const id = _id as EditorId;
       const content = renderEditor(id);
       return (
-        <MosaicWindow<EditorId>
+        <MosaicWindow<GridId>
           className={id}
           path={path}
           title={title}
-          renderToolbar={(props: MosaicWindowProps<EditorId>) =>
+          renderToolbar={(props: MosaicWindowProps<GridId>) =>
+            renderToolbar(props, id)
+          }
+        >
+          {content}
+        </MosaicWindow>
+      );
+    }
+    if (_id.endsWith('__Slice')) {
+      const id = _id as SliceId;
+      const content = renderSliceEditor(id);
+      return (
+        <MosaicWindow<GridId>
+          path={path}
+          title={title}
+          renderToolbar={(props: MosaicWindowProps<GridId>) =>
             renderToolbar(props, id)
           }
         >
