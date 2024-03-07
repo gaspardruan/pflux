@@ -2,14 +2,18 @@ import { Button, ButtonGroup } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
 
 import { AppState } from '../state';
+import { getGridId } from '../../utils/editor-utils';
+import { WinType } from '../../interface';
 
 interface CommandsProps {
   appState: AppState;
 }
 
 export const Commands = observer(({ appState }: CommandsProps) => {
-  const { title, sliceActive, parseSlice, clearSlice } = appState;
-  const { cursorPosition, cursorWord } = appState.editorMosaic;
+  const { title, sliceActive, parseSlice, clearSlice, sliceExtractActive } =
+    appState;
+  const { cursorPosition, cursorWord, show, hide } = appState.editorMosaic;
+  const { id } = appState.editorMosaic.mainEditor;
   // eslint-disable-next-line no-undef
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
@@ -23,8 +27,16 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     } else {
       parseSlice();
     }
-    // else appState.showErrorDialog('Please select a variable to slice.');
   };
+
+  const handleExtractClick = () => {
+    if (sliceExtractActive) {
+      hide(getGridId(WinType.SLICE, id!));
+    } else {
+      show(getGridId(WinType.SLICE, id!));
+    }
+  };
+
   return (
     <div
       className={
@@ -51,9 +63,10 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             onClick={handleSliceClick}
           />
           <Button
+            active={sliceExtractActive}
             icon="drawer-left"
             text="Extract"
-            onClick={() => console.log('Slice Extract clicked.')}
+            onClick={() => handleExtractClick()}
           />
         </ButtonGroup>
         <ButtonGroup fill>

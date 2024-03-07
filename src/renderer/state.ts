@@ -7,12 +7,15 @@ import {
   when,
 } from 'mobx';
 import * as MonacoType from 'monaco-editor';
+import { getLeaves } from 'react-mosaic-component';
 import { EditorMosaic } from './editor-mosaic';
 import {
   GenericDialogOptions,
   GenericDialogType,
   GlobalSetting,
+  WinType,
 } from '../interface';
+import { getGridId } from '../utils/editor-utils';
 
 /**
  * The application's state. Exported as a singleton.
@@ -98,6 +101,7 @@ export class AppState {
       showInfoDialog: action,
       showInputDialog: action,
       sliceActive: computed,
+      sliceExtractActive: computed,
       theme: observable,
       title: computed,
       toggleSystemTheme: action,
@@ -107,6 +111,7 @@ export class AppState {
     this.increment = this.increment.bind(this);
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
+    this.setExtractActive = this.setExtractActive.bind(this);
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
@@ -136,6 +141,11 @@ export class AppState {
 
   get sliceActive(): boolean {
     return this.editorMosaic.mainEditor.lineCollection!.length > 0;
+  }
+
+  get sliceExtractActive(): boolean {
+    const { mosaic, id } = this.editorMosaic.mainEditor;
+    return getLeaves(mosaic).some((v) => v === getGridId(WinType.SLICE, id!));
   }
 
   public increment() {

@@ -86,6 +86,7 @@ export class EditorMosaic {
       cursorWord: observable,
       fileContent2: observable,
       focusedGridId: observable,
+      hide: action,
       isEditeds: computed,
       isSaved: computed,
       mainEditor: observable,
@@ -109,7 +110,10 @@ export class EditorMosaic {
       updateMosaic: action,
     });
 
+    this.hide = this.hide.bind(this);
     this.setStructExpand = this.setStructExpand.bind(this);
+    this.show = this.show.bind(this);
+    this.setVisible = this.setVisible.bind(this);
 
     reaction(
       () => this.mainEditor.mosaic,
@@ -380,8 +384,11 @@ export class EditorMosaic {
   }
 
   public setVisible(_visible: GridId[]) {
+    console.log(_visible);
     const visible = sortGrid([...new Set(_visible)]);
+    console.log(visible);
     const mosaic = this.createMosaic(visible);
+    console.log(mosaic);
     this.mainEditor.mosaic = mosaic;
   }
 
@@ -400,7 +407,10 @@ export class EditorMosaic {
     };
   }
 
-  // public hide(id: GridId) {}
+  public hide(id: GridId) {
+    const visible = getLeaves(this.mainEditor.mosaic).filter((v) => v !== id);
+    this.setVisible(visible);
+  }
 
   public remove(id: EditorId) {
     if (id === this.mainEditor.id) {

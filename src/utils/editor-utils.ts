@@ -1,4 +1,4 @@
-import { EditorId, EditorValues, GridId } from '../interface';
+import { EditorId, EditorValues, GridId, WinType } from '../interface';
 
 export function sortGrid(grids: GridId[]) {
   const result: GridId[] = [];
@@ -8,17 +8,17 @@ export function sortGrid(grids: GridId[]) {
     }
   }
   for (const grid of grids) {
-    if (grid.startsWith('Slice__')) {
+    if (grid.endsWith('__Slice')) {
       result.push(grid);
     }
   }
   for (const grid of grids) {
-    if (grid.startsWith('Flow__')) {
+    if (grid.endsWith('__Flow')) {
       result.push(grid);
     }
   }
   for (const grid of grids) {
-    if (grid.startsWith('Analysis__')) {
+    if (grid.endsWith('__Analysis')) {
       result.push(grid);
     }
   }
@@ -33,19 +33,23 @@ export function getEmptyContent(filename: string): string {
 }
 
 export function getEditorTitle(id: GridId): string {
-  if (id.endsWith('.py')) {
-    return id;
+  if (id.endsWith('__Slice')) {
+    const name = id.split('__')[0];
+    return `Slice (${name})`;
   }
-  if (id.startsWith('Slice__')) {
-    return `Slice (${id})`;
+  if (id.endsWith('__Flow')) {
+    const name = id.split('__')[0];
+    return `Flow (${name})`;
   }
-  if (id.startsWith('Flow__')) {
-    return `Flow (${id})`;
-  }
-  if (id.startsWith('Analysis__')) {
-    return `Analysis (${id})`;
+  if (id.endsWith('__Analysis')) {
+    const name = id.split('__')[0];
+    return `Analysis (${name})`;
   }
   return id;
+}
+
+export function getGridId(type: WinType, id: EditorId): GridId {
+  return `${id}__${type}`;
 }
 
 export function isSupportedFile(filename: string): filename is EditorId {

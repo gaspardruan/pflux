@@ -28,10 +28,16 @@ export const enum GenericDialogType {
   'success' = 'success',
 }
 
+export enum WinType {
+  ANALYSIS = 'Analysis',
+  FLOW = 'Flow',
+  SLICE = 'Slice',
+}
+
 export type EditorId = `${string}.${'py'}`;
-export type SliceId = `Slice__${string}.${'py'}`;
-export type FlowId = `Flow__${string}.${'py'}`;
-export type AnalysisId = `Analysis__${string}.${'py'}`;
+export type SliceId = `${string}.${'py'}__Slice`;
+export type FlowId = `${string}.${'py'}__Flow`;
+export type AnalysisId = `${string}.${'py'}__Analysis`;
 export type GridId = EditorId | SliceId | FlowId | AnalysisId;
 
 export type EditorValues = Record<EditorId, string>;
