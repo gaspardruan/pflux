@@ -10,7 +10,6 @@ import {
   NAME,
   CALL,
   Name,
-  slice,
   Def,
   DEF,
   parse,
@@ -50,8 +49,8 @@ function isPositionBetween(
   endColumn: number,
 ) {
   const afterStart =
-    line > startLine || (line === startLine && column >= startColumn);
-  const beforeEnd = line < endLine || (line === endLine && column <= endColumn);
+    line > startLine || (line === startLine && column > startColumn);
+  const beforeEnd = line < endLine || (line === endLine && column < endColumn);
   return afterStart && beforeEnd;
 }
 
@@ -92,11 +91,50 @@ export enum SliceDirection {
   Backward,
 }
 
-/**
- * More general slice: given locations of important syntax nodes, find locations of all relevant
- * definitions. Locations can be mapped to lines later.
- * seedLocations are symbol locations.
- */
+export function slice(
+  ast: Module,
+  seedLocations?: LocationSet,
+  _dataflowAnalyzer?: DataflowAnalyzer,
+  direction = SliceDirection.Backward,
+): LocationSet {
+  const dataflowAnalyzer = _dataflowAnalyzer || new DataflowAnalyzer();
+  const cfg = new ControlFlowGraph(ast);
+  const dfa = dataflowAnalyzer.analyze(cfg).dataflows;
+
+  // Include at least the full statements for each seed.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let acceptLocation = (loc: Location) => true;
+  let sliceLocations = new LocationSet();
+  if (seedLocations) {
+    const seedStatementLocations = findSeedStatementLocations(
+      seedLocations,
+      cfg,
+    );
+    acceptLocation = (loc) =>
+      seedStatementLocations.some((seedStmtLoc) => intersect(seedStmtLoc, loc));
+    sliceLocations = new LocationSet(...seedStatementLocations.items);
+  }
+
+  let lastSize: number;
+  do {
+    lastSize = sliceLocations.size;
+    for (const flow of dfa.items) {
+      const [start, end] =
+        direction === SliceDirection.Backward
+          ? [flow.fromNode.location!, flow.toNode.location!]
+          : [flow.toNode.location!, flow.fromNode.location!];
+      if (acceptLocation(end)) {
+        sliceLocations.add(end);
+      }
+      if (sliceLocations.some((loc) => within(end, loc))) {
+        sliceLocations.add(start);
+      }
+    }
+  } while (sliceLocations.size > lastSize);
+
+  return sliceLocations;
+}
+
 export function sliceVar(
   ast: Module,
   seedLocation: Location,
@@ -189,6 +227,23 @@ function findSeedStatement(seedLocation: Location, cfg: ControlFlowGraph) {
   }
 }
 
+function findSeedStatementLocations(
+  seedLocations: LocationSet,
+  cfg: ControlFlowGraph,
+) {
+  const seedStatementLocations = new LocationSet();
+  seedLocations.items.forEach((seedLoc) => {
+    for (const block of cfg.blocks) {
+      for (const statement of block.statements) {
+        if (intersect(seedLoc, statement.location!)) {
+          seedStatementLocations.add(statement.location!);
+        }
+      }
+    }
+  });
+  return seedStatementLocations;
+}
+
 export function findSeedName(seedNode: SyntaxNode, seedLocation: Location) {
   let name = '';
   walk(seedNode, {
@@ -236,7 +291,10 @@ export function nameCount2(nodes: Array<SyntaxNode>) {
   return nameSet.size - funcSet.size;
 }
 
-export function findFunctionAtLocation(code: string, location: Location) {
+export function findFunctionAtLocation(
+  code: string,
+  location: Location,
+): [Def | null, Module] {
   const funcs: Def[] = [];
   const tree = parse(code);
   walk(tree, {
@@ -247,10 +305,10 @@ export function findFunctionAtLocation(code: string, location: Location) {
     },
   });
   if (funcs.length === 0) {
-    return null;
+    return [null, tree];
   }
   if (funcs.length === 1) {
-    return funcs[0];
+    return [funcs[0], tree];
   }
   let index = 0;
   let firstLine = 0;
@@ -260,7 +318,7 @@ export function findFunctionAtLocation(code: string, location: Location) {
       firstLine = func.location!.first_line;
     }
   });
-  return funcs[index];
+  return [funcs[index], tree];
 }
 
 export function transFunc2Module(func: Def): Module {
@@ -272,11 +330,13 @@ export function transFunc2Module(func: Def): Module {
 }
 
 export function getLineArray(code: string, location: Location) {
-  const func = findFunctionAtLocation(code, location);
+  const [func, tree] = findFunctionAtLocation(code, location);
+  let module: Module;
   if (func === null) {
-    return [];
+    module = tree;
+  } else {
+    module = transFunc2Module(func);
   }
-  const module = transFunc2Module(func);
   const sliceLocations = sliceVar(module, location);
   const lines = new Set<number>();
   sliceLocations.items.forEach((loc) => {
