@@ -85,6 +85,8 @@ export class EditorMosaic {
   public tempLineDecorations: MonacoType.editor.IEditorDecorationsCollection | null =
     null;
 
+  public panZoom: SvgPanZoom.Instance | null = null;
+
   constructor() {
     makeObservable(this, {
       addFile: action,
@@ -126,6 +128,7 @@ export class EditorMosaic {
     this.setStructExpand = this.setStructExpand.bind(this);
     this.show = this.show.bind(this);
     this.setVisible = this.setVisible.bind(this);
+    this.setPanZoom = this.setPanZoom.bind(this);
 
     reaction(
       () => this.mainEditor.mosaic,
@@ -196,6 +199,10 @@ export class EditorMosaic {
   ) {
     this.cursorPosition = position;
     this.cursorWord = word;
+  }
+
+  public setPanZoom(panZoom: SvgPanZoom.Instance) {
+    this.panZoom = panZoom;
   }
 
   public resetLayout() {
@@ -481,6 +488,9 @@ export class EditorMosaic {
         if (this.mainEditor.editor) {
           this.mainEditor.editor.layout();
         }
+        this.panZoom?.resize();
+        this.mainEditor.sliceEditor?.layout();
+
         delete this.layoutDebounce;
       }, DEBOUNCE_MSEC);
     }

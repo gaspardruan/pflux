@@ -8,6 +8,11 @@ export function sortGrid(grids: GridId[]) {
     }
   }
   for (const grid of grids) {
+    if (grid.endsWith('__CFG')) {
+      result.push(grid);
+    }
+  }
+  for (const grid of grids) {
     if (grid.endsWith('__Slice')) {
       result.push(grid);
     }
@@ -45,11 +50,16 @@ export function getEditorTitle(id: GridId): string {
     const name = id.split('__')[0];
     return `Analysis (${name})`;
   }
+  if (id.endsWith('__CFG')) {
+    const name = id.split('__')[0];
+    return `CFG (${name})`;
+  }
   return id;
 }
 
 export function getGridId(type: WinType, id: EditorId): GridId {
-  return `${id}__${type}`;
+  if (type !== WinType.EDITOR) return `${id}__${type}`;
+  return id;
 }
 
 export function isSupportedFile(filename: string): filename is EditorId {

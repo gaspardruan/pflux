@@ -10,12 +10,19 @@ interface CommandsProps {
 }
 
 export const Commands = observer(({ appState }: CommandsProps) => {
-  const { title, sliceActive, parseSlice, clearSlice, sliceExtractActive } =
-    appState;
+  const {
+    title,
+    sliceActive,
+    parseSlice,
+    clearSlice,
+    sliceExtractActive,
+    cfgButtonEnabled,
+    setupControlFlow,
+  } = appState;
   const { cursorPosition, cursorWord, show, hide, disposeSliceEditor } =
     appState.editorMosaic;
   const { id } = appState.editorMosaic.mainEditor;
-  // eslint-disable-next-line no-undef
+
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
       window.ElectronFlux.macTitlebarClicked();
@@ -39,6 +46,10 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     }
   };
 
+  const handleCFGClick = () => {
+    setupControlFlow();
+  };
+
   return (
     <div
       className={
@@ -56,6 +67,16 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             onClick={() => console.log('Setting clicked.')}
           />
         </ButtonGroup>
+
+        <ButtonGroup fill>
+          <Button
+            disabled={!cfgButtonEnabled}
+            icon="flow-branch"
+            text="Control Flow"
+            onClick={handleCFGClick}
+          />
+        </ButtonGroup>
+
         <ButtonGroup fill>
           <Button
             active={sliceActive}

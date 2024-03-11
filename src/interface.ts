@@ -29,16 +29,19 @@ export const enum GenericDialogType {
 }
 
 export enum WinType {
+  EDITOR = 'Editor',
   ANALYSIS = 'Analysis',
   FLOW = 'Flow',
   SLICE = 'Slice',
+  CFG = 'CFG',
 }
 
 export type EditorId = `${string}.${'py'}`;
 export type SliceId = `${string}.${'py'}__Slice`;
+export type CFGId = `${string}.${'py'}__CFG`;
 export type FlowId = `${string}.${'py'}__Flow`;
 export type AnalysisId = `${string}.${'py'}__Analysis`;
-export type GridId = EditorId | SliceId | FlowId | AnalysisId;
+export type GridId = EditorId | SliceId | FlowId | AnalysisId | CFGId;
 
 export type EditorValues = Record<EditorId, string>;
 
@@ -65,4 +68,10 @@ export interface StructNodeInfo {
   text: string;
   code: Array<StructNodeInfo>;
   range: IRange;
+}
+
+export interface Link {
+  from: number;
+  to: number;
+  label?: string;
 }

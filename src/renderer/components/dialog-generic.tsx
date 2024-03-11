@@ -44,7 +44,6 @@ export const GenericDialog = observer(({ appState }: GenericDialogProps) => {
     appState.setGenericDialogShowing(false);
   };
 
-  // eslint-disable-next-line no-undef
   const handleSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onClose(true);

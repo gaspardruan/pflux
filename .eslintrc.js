@@ -15,6 +15,7 @@ module.exports = {
     'import/no-import-module-exports': 'off',
     'import/prefer-default-export': 'off',
     'no-console': 'off',
+    'no-undef': 'off',
     'no-use-before-define': 'off',
     'no-restricted-syntax': 'off',
     'no-shadow': 'off',

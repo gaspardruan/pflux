@@ -53,6 +53,9 @@ const electronHandler = {
       newName,
     );
   },
+  getControlFlow(code: string, line: number) {
+    return ipcRenderer.invoke(IpcEvents.CONTROL_FLOW, code, line);
+  },
   getFiles(folder: string): Promise<EditorValues> {
     return ipcRenderer.invoke(IpcEvents.FS_GET_FILES, folder);
   },

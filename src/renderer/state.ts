@@ -48,7 +48,6 @@ export class AppState {
   // -- Various sesstion-only settings ------
   public genericDialogOptions: GenericDialogOptions = {
     type: GenericDialogType.warning,
-    // eslint-disable-next-line no-undef
     label: '' as string | React.JSX.Element,
     ok: 'Okay',
     cancel: 'Cancel',
@@ -69,9 +68,16 @@ export class AppState {
   // Slice Parse
   public extractActive = false;
 
+  // Control Flow
+  public functionRange: MonacoType.IRange | null = null;
+  public cfgMermaid: string | null = null;
+
   constructor() {
     makeObservable(this, {
+      cfgButtonEnabled: computed,
+      cfgMermaid: observable,
       clearSlice: action,
+      controlFlowActive: computed,
       counter: observable,
       editorMosaic: observable,
       extractActive: observable,
@@ -80,6 +86,7 @@ export class AppState {
       fontSize: observable,
       folderPath: observable,
       folderName: observable,
+      functionRange: observable,
       genericDialogLastInput: observable,
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
@@ -88,9 +95,11 @@ export class AppState {
       isHeaderFocusable: computed,
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
+      setCFGMermaid: action,
       setExtractActive: observable,
       setFileTreeState: action,
       setFolderPathAndName: action,
+      setFunctionRange: action,
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
@@ -112,6 +121,8 @@ export class AppState {
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
     this.setExtractActive = this.setExtractActive.bind(this);
+    this.setFunctionRange = this.setFunctionRange.bind(this);
+    this.setupControlFlow = this.setupControlFlow.bind(this);
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
@@ -148,6 +159,21 @@ export class AppState {
     return getLeaves(mosaic).some((v) => v === getGridId(WinType.SLICE, id!));
   }
 
+  get controlFlowActive(): boolean {
+    const { mosaic, id } = this.editorMosaic.mainEditor;
+    return getLeaves(mosaic).some((v) => v === getGridId(WinType.CFG, id!));
+  }
+
+  get cfgButtonEnabled() {
+    const em = this.editorMosaic;
+    if (em.cursorPosition) {
+      const line = em.cursorPosition.lineNumber;
+      const content = em.mainEditor.editor!.getModel()!.getLineContent(line);
+      return content.trim().startsWith('def');
+    }
+    return false;
+  }
+
   public increment() {
     this.counter += 1;
   }
@@ -177,6 +203,14 @@ export class AppState {
     this.extractActive = isActive;
   }
 
+  public setFunctionRange(range: MonacoType.IRange | null) {
+    this.functionRange = range;
+  }
+
+  public setCFGMermaid(mermaid: string) {
+    this.cfgMermaid = mermaid;
+  }
+
   public async showGenericDialog(
     opts: GenericDialogOptions,
   ): Promise<{ confirm: boolean; input: string }> {
@@ -193,7 +227,7 @@ export class AppState {
   public async showInputDialog(opts: {
     cancel?: string;
     defaultInput?: string;
-    // eslint-disable-next-line no-undef
+
     label: string | React.JSX.Element;
     ok: string;
     placeholder: string;
@@ -209,7 +243,7 @@ export class AppState {
 
   public showConfirmDialog = async (opts: {
     cancel?: string;
-    // eslint-disable-next-line no-undef
+
     label: string | React.JSX.Element;
     ok: string;
   }): Promise<boolean> => {
@@ -223,7 +257,6 @@ export class AppState {
   };
 
   public async showInfoDialog(
-    // eslint-disable-next-line no-undef
     label: string | React.JSX.Element,
   ): Promise<void> {
     await this.showGenericDialog({
@@ -235,7 +268,6 @@ export class AppState {
   }
 
   public async showErrorDialog(
-    // eslint-disable-next-line no-undef
     label: string | React.JSX.Element,
   ): Promise<void> {
     await this.showGenericDialog({
@@ -295,7 +327,7 @@ export class AppState {
               options: { blockClassName: 'sliced-line-highlight' },
             };
           });
-          this.editorMosaic.tempLineDecorations =
+          this.editorMosaic.tempLineDecorations = // not observable
             em.mainEditor.editor!.createDecorationsCollection(decorations);
         }
       })
@@ -311,6 +343,28 @@ export class AppState {
       em.tempLineDecorations.clear();
       em.tempLineDecorations = null;
     }
+  }
+
+  public setupControlFlow() {
+    const em = this.editorMosaic;
+    if (!em.cursorPosition) return;
+    window.ElectronFlux.getControlFlow(
+      em.fileContent2,
+      em.cursorPosition.lineNumber,
+    )
+      .then((res) => {
+        if (res) {
+          this.setCFGMermaid(res);
+          if (!this.controlFlowActive) {
+            em.show(getGridId(WinType.CFG, em.mainEditor.id!));
+          }
+        } else {
+          this.showErrorDialog('Please click on a line of function name');
+        }
+      })
+      .catch(() => {
+        // do nothing
+      });
   }
 
   /**

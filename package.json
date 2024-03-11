@@ -107,6 +107,7 @@
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.4",
     "fs-extra": "^11.2.0",
+    "mermaid": "^10.9.0",
     "mobx": "^6.12.0",
     "mobx-react": "^9.1.0",
     "monaco-editor": "^0.46.0",
@@ -114,7 +115,8 @@
     "react-dom": "^18.2.0",
     "react-mosaic-component": "^6.1.0",
     "react-router-dom": "^6.16.0",
-    "react-window": "^1.8.10"
+    "react-window": "^1.8.10",
+    "svg-pan-zoom": "^3.6.1"
   },
   "devDependencies": {
     "@electron/notarize": "^2.1.0",
