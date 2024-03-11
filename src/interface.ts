@@ -17,7 +17,6 @@ export interface GenericDialogOptions {
   cancel?: string;
   wantsInput: boolean;
   defaultInput?: string;
-  // eslint-disable-next-line no-undef
   label: string | React.JSX.Element;
   placeholder?: string;
 }
