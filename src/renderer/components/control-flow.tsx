@@ -22,7 +22,7 @@ mermaid.initialize({
 });
 
 export const ControlFlow = observer(({ appState }: IControlFlowProps) => {
-  const { cfgMermaid } = appState;
+  const { cfgMermaid } = appState.editorMosaic.mainEditor;
   const { setPanZoom } = appState.editorMosaic;
   const ref = useRef<null | HTMLDivElement>(null);
   useEffect(() => {
@@ -62,7 +62,7 @@ export const ControlFlow = observer(({ appState }: IControlFlowProps) => {
           console.error(err);
         });
     };
-    drawDiagram();
+    if (cfgMermaid) drawDiagram();
   }, [cfgMermaid, setPanZoom]);
 
   return <div className="mermaid" ref={ref} />;

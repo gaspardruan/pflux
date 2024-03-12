@@ -21,6 +21,7 @@ interface EditorBackup {
   isEdited: boolean;
   structExpandRecord: Map<string, boolean>;
   lineCollection: Array<number>;
+  cfgMermaid: string;
 }
 
 export class EditorMosaic {
@@ -32,6 +33,7 @@ export class EditorMosaic {
     isEdited: boolean;
     structExpandRecord: Map<string, boolean> | null;
     lineCollection: Array<number> | null;
+    cfgMermaid: string | null;
   } = {
     editor: null,
     sliceEditor: null,
@@ -40,6 +42,7 @@ export class EditorMosaic {
     isEdited: false,
     structExpandRecord: null,
     lineCollection: null,
+    cfgMermaid: null,
   };
 
   public backups = new Map<EditorId, EditorBackup>();
@@ -107,6 +110,7 @@ export class EditorMosaic {
       renameFile: action,
       resetLayout: action,
       set: action,
+      setCFGMermaid: action,
       setCursorWord: action,
       setFileContent2: action,
       setFocusedGridId: action,
@@ -205,6 +209,10 @@ export class EditorMosaic {
     this.panZoom = panZoom;
   }
 
+  public setCFGMermaid(mermaid: string) {
+    this.mainEditor.cfgMermaid = mermaid;
+  }
+
   public resetLayout() {
     this.mainEditor.mosaic = this.mainEditor.id!;
   }
@@ -230,6 +238,7 @@ export class EditorMosaic {
       this.mainEditor.mosaic = backup.mosaic;
       this.mainEditor.structExpandRecord = backup.structExpandRecord;
       this.mainEditor.lineCollection = backup.lineCollection;
+      this.mainEditor.cfgMermaid = backup.cfgMermaid;
     }
   }
 
@@ -259,7 +268,9 @@ export class EditorMosaic {
         isEdited: this.mainEditor.isEdited,
         structExpandRecord: this.mainEditor.structExpandRecord!,
         lineCollection: this.mainEditor.lineCollection!,
+        cfgMermaid: this.mainEditor.cfgMermaid!,
       };
+    this.mainEditor.cfgMermaid = backup.cfgMermaid;
     this.mainEditor.mosaic = backup.mosaic;
   }
 
@@ -287,6 +298,7 @@ export class EditorMosaic {
         isEdited: this.mainEditor.isEdited,
         structExpandRecord: this.mainEditor.structExpandRecord!,
         lineCollection: this.mainEditor.lineCollection!,
+        cfgMermaid: this.mainEditor.cfgMermaid!,
       });
       this.mainEditor.mosaic = newId;
     }
@@ -409,6 +421,7 @@ export class EditorMosaic {
       isEdited,
       structExpandRecord: new Map(),
       lineCollection: [],
+      cfgMermaid: '',
     };
     this.backups.set(id, backup);
   }

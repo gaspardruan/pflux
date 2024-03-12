@@ -66,27 +66,21 @@ export class AppState {
   public fileTreeState: 'add' | 'default' = 'default';
 
   // Slice Parse
-  public extractActive = false;
 
   // Control Flow
-  public functionRange: MonacoType.IRange | null = null;
-  public cfgMermaid: string | null = null;
 
   constructor() {
     makeObservable(this, {
       cfgButtonEnabled: computed,
-      cfgMermaid: observable,
       clearSlice: action,
       controlFlowActive: computed,
       counter: observable,
       editorMosaic: observable,
-      extractActive: observable,
       fileTreeState: observable,
       fontFamily: observable,
       fontSize: observable,
       folderPath: observable,
       folderName: observable,
-      functionRange: observable,
       genericDialogLastInput: observable,
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
@@ -95,11 +89,8 @@ export class AppState {
       isHeaderFocusable: computed,
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
-      setCFGMermaid: action,
-      setExtractActive: observable,
       setFileTreeState: action,
       setFolderPathAndName: action,
-      setFunctionRange: action,
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
@@ -120,8 +111,6 @@ export class AppState {
     this.increment = this.increment.bind(this);
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
-    this.setExtractActive = this.setExtractActive.bind(this);
-    this.setFunctionRange = this.setFunctionRange.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
 
     // Setup auto-runs
@@ -197,18 +186,6 @@ export class AppState {
 
   public setGenericDialogShowing(isShowing: boolean) {
     this.isGenericDialogShowing = isShowing;
-  }
-
-  public setExtractActive(isActive: boolean) {
-    this.extractActive = isActive;
-  }
-
-  public setFunctionRange(range: MonacoType.IRange | null) {
-    this.functionRange = range;
-  }
-
-  public setCFGMermaid(mermaid: string) {
-    this.cfgMermaid = mermaid;
   }
 
   public async showGenericDialog(
@@ -354,7 +331,7 @@ export class AppState {
     )
       .then((res) => {
         if (res) {
-          this.setCFGMermaid(res);
+          em.setCFGMermaid(res);
           if (!this.controlFlowActive) {
             em.show(getGridId(WinType.CFG, em.mainEditor.id!));
           }
