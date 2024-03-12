@@ -25,6 +25,7 @@ interface EditorBackup {
 }
 
 export class EditorMosaic {
+  // mainEditor includes the whole window except sidebar (not just editor)
   public mainEditor: {
     editor: Editor | null;
     sliceEditor: Editor | null;
@@ -46,9 +47,17 @@ export class EditorMosaic {
   };
 
   public backups = new Map<EditorId, EditorBackup>();
-
+  // there is a middle unconsistent state when switching between files
+  // owing to the editor-mosaic trigger-render logic:
+  // mosaic changes -> editor render -> editor calling setMainEditor on mounted
+  // -> init every thing in setMainEditor
+  // so between the mosaic changes and setMainEditor, the mainEditor is not ready
+  // I use pendingBackup to keep the mainEditor the same as the last time when
+  // switching, and set the pendingBackup to backups in setMainEditor
+  // TO IMPROVE: this makes the logic too complex, need to refactor
   private pendingBackup: EditorBackup | null = null;
 
+  // structTree uses the state to decide the behavior to handle exception
   private state: 'created' | 'updated' | 'default' = 'default';
 
   public get isEditeds() {

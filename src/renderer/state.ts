@@ -24,9 +24,6 @@ import { getGridId } from '../utils/editor-utils';
  * @class State
  */
 export class AppState {
-  // TestButton
-  public counter: number = 0;
-
   // -- Persisted settings -----------------\
   public theme: string | null = localStorage.getItem(GlobalSetting.theme);
   public isUsingSystemTheme = !!(
@@ -74,7 +71,6 @@ export class AppState {
       cfgButtonEnabled: computed,
       clearSlice: action,
       controlFlowActive: computed,
-      counter: observable,
       editorMosaic: observable,
       fileTreeState: observable,
       fontFamily: observable,
@@ -84,7 +80,6 @@ export class AppState {
       genericDialogLastInput: observable,
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
-      increment: action,
       isGenericDialogShowing: observable,
       isHeaderFocusable: computed,
       isSettingsShowing: observable,
@@ -108,7 +103,6 @@ export class AppState {
     });
 
     // Bind the method to the instance
-    this.increment = this.increment.bind(this);
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
@@ -161,10 +155,6 @@ export class AppState {
       return content.trim().startsWith('def');
     }
     return false;
-  }
-
-  public increment() {
-    this.counter += 1;
   }
 
   public setTheme(fileName?: string) {
