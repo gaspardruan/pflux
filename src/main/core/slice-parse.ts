@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import {
   Location,
   Module,
@@ -14,9 +15,11 @@ import {
   DEF,
   parse,
   MODULE,
+  Dataflow,
 } from '@msrvida/python-program-analysis';
 import { ipcMain } from 'electron';
 import { IpcEvents } from '../../ipc-events';
+import { Variable, VarDep } from '../../interface';
 
 export class LocationSet extends SSet<Location> {
   constructor(...items: Location[]) {
@@ -26,6 +29,33 @@ export class LocationSet extends SSet<Location> {
       ...items,
     );
   }
+}
+
+export class DepSet extends SSet<VarDep> {
+  constructor(...items: VarDep[]) {
+    super((d) => `${d.from}-${d.to}`, ...items);
+  }
+}
+
+export class NodeSet extends SSet<SyntaxNode> {
+  constructor(...items: SyntaxNode[]) {
+    super(
+      (n) => {
+        const l = n.location!;
+        return [
+          l.first_line,
+          l.first_column,
+          l.last_line,
+          l.last_column,
+        ].toString();
+      },
+      ...items,
+    );
+  }
+}
+
+function vid(n: string, l: number): string {
+  return `${n}_${l}`;
 }
 
 function within(inner: Location, outer: Location): boolean {
@@ -96,43 +126,45 @@ export function slice(
   seedLocations?: LocationSet,
   _dataflowAnalyzer?: DataflowAnalyzer,
   direction = SliceDirection.Backward,
-): LocationSet {
+): [NodeSet, Set<Dataflow>, SyntaxNode | null] {
   const dataflowAnalyzer = _dataflowAnalyzer || new DataflowAnalyzer();
   const cfg = new ControlFlowGraph(ast);
   const dfa = dataflowAnalyzer.analyze(cfg).dataflows;
+  const usedFlow = new Set<Dataflow>();
 
   // Include at least the full statements for each seed.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let acceptLocation = (loc: Location) => true;
-  let sliceLocations = new LocationSet();
+  let acceptNode = (node: SyntaxNode) => true;
+  let sliceNodes = new NodeSet();
   if (seedLocations) {
-    const seedStatementLocations = findSeedStatementLocations(
-      seedLocations,
-      cfg,
-    );
-    acceptLocation = (loc) =>
-      seedStatementLocations.some((seedStmtLoc) => intersect(seedStmtLoc, loc));
-    sliceLocations = new LocationSet(...seedStatementLocations.items);
+    const seedStatementNodes = findSeedStatementNodes(seedLocations, cfg);
+    acceptNode = (node) =>
+      seedStatementNodes.some((seedStmtNode) =>
+        intersect(seedStmtNode.location!, node.location!),
+      );
+    sliceNodes = new NodeSet(...seedStatementNodes.items);
   }
 
   let lastSize: number;
   do {
-    lastSize = sliceLocations.size;
+    lastSize = sliceNodes.size;
     for (const flow of dfa.items) {
       const [start, end] =
         direction === SliceDirection.Backward
-          ? [flow.fromNode.location!, flow.toNode.location!]
-          : [flow.toNode.location!, flow.fromNode.location!];
-      if (acceptLocation(end)) {
-        sliceLocations.add(end);
+          ? [flow.fromNode, flow.toNode]
+          : [flow.toNode, flow.fromNode];
+      if (acceptNode(end)) {
+        sliceNodes.add(end);
+        usedFlow.add(flow);
       }
-      if (sliceLocations.some((loc) => within(end, loc))) {
-        sliceLocations.add(start);
+      if (sliceNodes.some((node) => within(end.location!, node.location!))) {
+        sliceNodes.add(start);
+        usedFlow.add(flow);
       }
     }
-  } while (sliceLocations.size > lastSize);
+  } while (sliceNodes.size > lastSize);
 
-  return sliceLocations;
+  return [sliceNodes, usedFlow, null];
 }
 
 export function sliceVar(
@@ -140,10 +172,11 @@ export function sliceVar(
   seedLocation: Location,
   _dataflowAnalyzer?: DataflowAnalyzer,
   direction = SliceDirection.Backward,
-): LocationSet {
+): [NodeSet, Set<Dataflow>, SyntaxNode | null] {
   const dataflowAnalyzer = _dataflowAnalyzer || new DataflowAnalyzer();
   const cfg = new ControlFlowGraph(ast);
   const dfa = dataflowAnalyzer.analyze(cfg).dataflows;
+  const usedFlow = new Set<Dataflow>();
 
   let isLine = false;
   const seedNode = findSeedStatement(seedLocation, cfg)!;
@@ -157,8 +190,6 @@ export function sliceVar(
       )
     ) {
       isLine = true;
-    } else if (nameCount2(seedNode.sources) === 1) {
-      isLine = true;
     }
   } else if (seedNode.type === CALL) {
     if (nameCount(seedNode) === 1) {
@@ -168,10 +199,9 @@ export function sliceVar(
     isLine = true;
   }
 
-  const seedLocations = new LocationSet(seedLocation);
-  if (isLine) return slice(ast, seedLocations);
+  if (isLine) return slice(ast, new LocationSet(seedLocation));
 
-  const sliceLocations = new LocationSet();
+  const sliceNodes = new NodeSet();
   const seedNodeLocation = seedNode.location!;
   const seedName = findSeedName(seedNode, seedLocation);
   for (const flow of dfa.items) {
@@ -190,30 +220,32 @@ export function sliceVar(
             return false;
           })
         ) {
-          sliceLocations.add(start.location!);
+          sliceNodes.add(start);
+          usedFlow.add(flow);
         }
       } else {
-        sliceLocations.add(start.location!);
+        sliceNodes.add(start);
+        usedFlow.add(flow);
       }
     }
   }
 
   let lastSize: number;
   do {
-    lastSize = sliceLocations.size;
+    lastSize = sliceNodes.size;
     for (const flow of dfa.items) {
       const [start, end] =
         direction === SliceDirection.Backward
-          ? [flow.fromNode.location, flow.toNode.location]
-          : [flow.toNode.location, flow.fromNode.location];
-      if (sliceLocations.some((loc) => within(end!, loc))) {
-        sliceLocations.add(start!);
+          ? [flow.fromNode, flow.toNode]
+          : [flow.toNode, flow.fromNode];
+      if (sliceNodes.some((node) => within(end.location!, node.location!))) {
+        sliceNodes.add(start);
+        usedFlow.add(flow);
       }
     }
-  } while (sliceLocations.size > lastSize);
+  } while (sliceNodes.size > lastSize);
 
-  sliceLocations.add(seedLocation);
-  return sliceLocations;
+  return [sliceNodes, usedFlow, seedNode];
 }
 
 // eslint-disable-next-line consistent-return
@@ -227,21 +259,21 @@ function findSeedStatement(seedLocation: Location, cfg: ControlFlowGraph) {
   }
 }
 
-function findSeedStatementLocations(
+function findSeedStatementNodes(
   seedLocations: LocationSet,
   cfg: ControlFlowGraph,
 ) {
-  const seedStatementLocations = new LocationSet();
+  const seedStatementNodes = new NodeSet();
   seedLocations.items.forEach((seedLoc) => {
     for (const block of cfg.blocks) {
       for (const statement of block.statements) {
         if (intersect(seedLoc, statement.location!)) {
-          seedStatementLocations.add(statement.location!);
+          seedStatementNodes.add(statement);
         }
       }
     }
   });
-  return seedStatementLocations;
+  return seedStatementNodes;
 }
 
 export function findSeedName(seedNode: SyntaxNode, seedLocation: Location) {
@@ -291,6 +323,29 @@ export function nameCount2(nodes: Array<SyntaxNode>) {
   return nameSet.size - funcSet.size;
 }
 
+export function getVarName(_node: SyntaxNode) {
+  const nameSet = new Set<string>();
+  const funcSet = new Set<string>();
+
+  walk(_node, {
+    onEnterNode: (node) => {
+      if (node.type === NAME) {
+        nameSet.add(node.id);
+      } else if (node.type === CALL) {
+        const func = node.func as Name;
+        funcSet.add(func.id);
+      }
+    },
+  });
+  const rltSet: string[] = [];
+  nameSet.forEach((name) => {
+    if (!funcSet.has(name)) {
+      rltSet.push(name);
+    }
+  });
+  return rltSet;
+}
+
 export function findFunctionAtLocation(
   code: string,
   location: Location,
@@ -329,7 +384,80 @@ export function transFunc2Module(func: Def): Module {
   };
 }
 
-export function getLineArray(code: string, location: Location) {
+export function getVarTable(sliceNodes: NodeSet) {
+  const varTable = new Map<string, Variable>();
+  sliceNodes.items.forEach((node) => {
+    if (node.type === ASSIGN) {
+      node.targets.forEach((target) => {
+        if (target.type === NAME) {
+          const id = vid(target.id, target.location!.first_line);
+          const v = { name: target.id, line: target.location!.first_line, id };
+          varTable.set(id, v);
+        }
+      });
+    }
+  });
+  return varTable;
+}
+
+export function getVarDep(
+  dfa: Set<Dataflow>,
+  varTable: Map<string, Variable>,
+): DepSet {
+  const varDep = new DepSet();
+  dfa.forEach((flow) => {
+    if (flow.fromRef && flow.toRef) {
+      const from = flow.fromRef;
+      const to = flow.toRef;
+      if (to.node.type === ASSIGN && from.node.type === ASSIGN) {
+        const fromId = vid(from.name, from.location!.first_line);
+        to.node.targets.forEach((target) => {
+          if (target.type === NAME) {
+            const toId = vid(target.id, target.location!.first_line);
+            if (varTable.has(toId) && varTable.has(fromId)) {
+              const dep = { from: toId, to: fromId };
+              varDep.add(dep);
+            }
+          }
+        });
+      }
+    } else {
+      const from = flow.fromNode;
+      const to = flow.toNode;
+      console.log(JSON.stringify(from, null, 2));
+      console.log(JSON.stringify(to, null, 2));
+      if (to.type === ASSIGN && from.type === ASSIGN) {
+        const fromSrc: Map<string, number> = new Map();
+        from.targets.forEach((target) => {
+          if (target.type === NAME) {
+            fromSrc.set(target.id, target.location!.first_line);
+          }
+        });
+        const size = to.sources.length;
+        for (let i = 0; i < size; i += 1) {
+          const source = to.sources[i];
+          const target = to.targets[i];
+          if (target.type === NAME) {
+            const toId = vid(target.id, target.location!.first_line);
+            const sourceNames = getVarName(source);
+            sourceNames.forEach((name) => {
+              if (fromSrc.has(name)) {
+                const fromId = vid(name, fromSrc.get(name)!);
+                if (varTable.has(toId) && varTable.has(fromId)) {
+                  const dep = { from: toId, to: fromId };
+                  varDep.add(dep);
+                }
+              }
+            });
+          }
+        }
+      }
+    }
+  });
+  return varDep;
+}
+
+export function getSliceResult(code: string, location: Location) {
   const [func, tree] = findFunctionAtLocation(code, location);
   let module: Module;
   if (func === null) {
@@ -337,12 +465,25 @@ export function getLineArray(code: string, location: Location) {
   } else {
     module = transFunc2Module(func);
   }
-  const sliceLocations = sliceVar(module, location);
-  const lines = new Set<number>();
-  sliceLocations.items.forEach((loc) => {
-    lines.add(loc.first_line);
+  const [sliceNodes, dfa, seedNode] = sliceVar(module, location);
+  dfa.forEach((flow) => console.log(flow));
+
+  const varTable = getVarTable(sliceNodes);
+  varTable.forEach((v) => console.log(v));
+
+  const varDep = getVarDep(dfa, varTable);
+  varDep.items.forEach((dep) => console.log(dep));
+
+  const lineSet = new Set<number>();
+  if (seedNode) sliceNodes.add(seedNode);
+  sliceNodes.items.forEach((node) => {
+    lineSet.add(node.location!.first_line);
   });
-  return Array.from(lines).sort((a, b) => a - b);
+
+  const vars = Array.from(varTable.values());
+  const deps = varDep.items;
+  const lines = Array.from(lineSet).sort((a, b) => a - b);
+  return { lines, vars, deps };
 }
 
 export function setupSliceParse() {
@@ -350,9 +491,9 @@ export function setupSliceParse() {
     IpcEvents.PARSE_SLICE,
     (_event, code: string, location: Location) => {
       try {
-        return getLineArray(code, location);
+        return getSliceResult(code, location);
       } catch (e) {
-        return [];
+        return { vars: [], deps: [], lines: [] };
       }
     },
   );

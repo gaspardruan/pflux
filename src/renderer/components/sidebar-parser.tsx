@@ -21,7 +21,7 @@ interface INodeData {
 }
 
 export const SidebarParser = observer(({ appState }: SidebarParserProps) => {
-  const { editorMosaic, setFunctionRange } = appState;
+  const { editorMosaic } = appState;
   const { structTree, setStructExpand } = editorMosaic;
   const { structExpandRecord, editor } = editorMosaic.mainEditor;
 
@@ -92,7 +92,6 @@ export const SidebarParser = observer(({ appState }: SidebarParserProps) => {
   const handleNodeClick = (node: TreeNodeInfo) => {
     // 将range的第一行显示在屏幕中间, 并高亮这一行
     const { range } = node.nodeData as INodeData;
-    setFunctionRange(range);
     editor!.revealLineInCenter(range.startLineNumber);
     editor!.setPosition({ lineNumber: range.startLineNumber, column: 1 });
   };

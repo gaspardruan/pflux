@@ -3,7 +3,6 @@ import { Files } from '../../interface';
 import { IpcEvents } from '../../ipc-events';
 
 export function getFiles(
-  // eslint-disable-next-line no-undef
   window: Electron.BrowserWindow,
   getAll: boolean = false,
 ): Promise<{ folderPath: string | null; files: Files }> {

@@ -74,3 +74,20 @@ export interface Link {
   to: number;
   label?: string;
 }
+
+export interface Variable {
+  id: string;
+  name: string;
+  line: number;
+}
+
+export interface VarDep {
+  from: string;
+  to: string;
+}
+
+export interface SliceResult {
+  lines: string[];
+  vars: Variable[];
+  deps: VarDep[];
+}

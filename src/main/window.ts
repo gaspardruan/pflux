@@ -9,7 +9,6 @@ import { createContextMenu } from './context-menu';
  *
  * @returns {Electron.BrowserWindowConstructorOptions}
  */
-// eslint-disable-next-line no-undef
 export function getMainWindowOptions(): Electron.BrowserWindowConstructorOptions {
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
