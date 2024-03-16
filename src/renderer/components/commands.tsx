@@ -16,6 +16,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     parseSlice,
     clearSlice,
     sliceExtractActive,
+    varDepActive,
     cfgButtonEnabled,
     setupControlFlow,
   } = appState;
@@ -48,6 +49,14 @@ export const Commands = observer(({ appState }: CommandsProps) => {
 
   const handleCFGClick = () => {
     setupControlFlow();
+  };
+
+  const handleVarDepClick = () => {
+    if (varDepActive) {
+      hide(getGridId(WinType.VARDEP, id!));
+    } else {
+      show(getGridId(WinType.VARDEP, id!));
+    }
   };
 
   return (
@@ -89,10 +98,18 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             onClick={handleSliceClick}
           />
           <Button
+            disabled={!sliceExtractActive && !sliceActive}
             active={sliceExtractActive}
             icon="drawer-left"
             text="Extract"
             onClick={() => handleExtractClick()}
+          />
+          <Button
+            disabled={!varDepActive && !sliceActive}
+            active={varDepActive}
+            icon="graph"
+            text="VarDep"
+            onClick={handleVarDepClick}
           />
         </ButtonGroup>
         <ButtonGroup fill>

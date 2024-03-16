@@ -13,6 +13,7 @@ import {
   GenericDialogOptions,
   GenericDialogType,
   GlobalSetting,
+  SliceResult,
   WinType,
 } from '../interface';
 import { getGridId } from '../utils/editor-utils';
@@ -100,6 +101,7 @@ export class AppState {
       theme: observable,
       title: computed,
       toggleSystemTheme: action,
+      varDepActive: computed,
     });
 
     // Bind the method to the instance
@@ -140,6 +142,11 @@ export class AppState {
   get sliceExtractActive(): boolean {
     const { mosaic, id } = this.editorMosaic.mainEditor;
     return getLeaves(mosaic).some((v) => v === getGridId(WinType.SLICE, id!));
+  }
+
+  get varDepActive(): boolean {
+    const { mosaic, id } = this.editorMosaic.mainEditor;
+    return getLeaves(mosaic).some((v) => v === getGridId(WinType.VARDEP, id!));
   }
 
   get controlFlowActive(): boolean {
@@ -282,13 +289,14 @@ export class AppState {
       last_column: em.cursorWord!.endColumn - 1,
     };
     window.ElectronFlux.parseSlice(em.fileContent2, loc)
-      .then((res: number[]) => {
-        if (res.length === 0)
+      .then((res: SliceResult) => {
+        if (res.lines.length === 0)
           this.showErrorDialog('Please select a variable to slice.');
         else {
-          this.editorMosaic.setLineCollection(res);
+          this.editorMosaic.setLineCollection(res.lines);
+          this.editorMosaic.setVarDepGraph(res.varDepGraph);
           this.editorMosaic.replaceSliceEditorModel();
-          const decorations = res.map((line) => {
+          const decorations = res.lines.map((line) => {
             return {
               range: new MonacoType.Range(line, 1, line, 2),
               options: { blockClassName: 'sliced-line-highlight' },
@@ -304,11 +312,11 @@ export class AppState {
   }
 
   public clearSlice() {
-    const em = this.editorMosaic;
     this.editorMosaic.mainEditor.lineCollection = [];
-    if (em.tempLineDecorations) {
-      em.tempLineDecorations.clear();
-      em.tempLineDecorations = null;
+    this.editorMosaic.mainEditor.varDepGraph = '';
+    if (this.editorMosaic.tempLineDecorations) {
+      this.editorMosaic.tempLineDecorations.clear();
+      this.editorMosaic.tempLineDecorations = null;
     }
   }
 

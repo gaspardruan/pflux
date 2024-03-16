@@ -22,6 +22,7 @@ interface EditorBackup {
   structExpandRecord: Map<string, boolean>;
   lineCollection: Array<number>;
   cfgMermaid: string;
+  varDepGraph: string;
 }
 
 export class EditorMosaic {
@@ -35,6 +36,7 @@ export class EditorMosaic {
     structExpandRecord: Map<string, boolean> | null;
     lineCollection: Array<number> | null;
     cfgMermaid: string | null;
+    varDepGraph: string | null;
   } = {
     editor: null,
     sliceEditor: null,
@@ -44,6 +46,7 @@ export class EditorMosaic {
     structExpandRecord: null,
     lineCollection: null,
     cfgMermaid: null,
+    varDepGraph: null,
   };
 
   public backups = new Map<EditorId, EditorBackup>();
@@ -97,7 +100,8 @@ export class EditorMosaic {
   public tempLineDecorations: MonacoType.editor.IEditorDecorationsCollection | null =
     null;
 
-  public panZoom: SvgPanZoom.Instance | null = null;
+  public cfgPanZoom: SvgPanZoom.Instance | null = null;
+  public varPanZoom: SvgPanZoom.Instance | null = null;
 
   constructor() {
     makeObservable(this, {
@@ -129,6 +133,7 @@ export class EditorMosaic {
       setSliceEditor: action,
       setStructTree: action,
       setStructExpand: action,
+      setVarDepGraph: action,
       setVisible: action,
       show: action,
       structTree: observable,
@@ -195,6 +200,10 @@ export class EditorMosaic {
     this.mainEditor.lineCollection = val;
   }
 
+  public setVarDepGraph(val: string) {
+    this.mainEditor.varDepGraph = val;
+  }
+
   public updateMosaic(mosaic: MosaicNode<GridId> | null) {
     this.mainEditor.mosaic = mosaic;
   }
@@ -214,8 +223,9 @@ export class EditorMosaic {
     this.cursorWord = word;
   }
 
-  public setPanZoom(panZoom: SvgPanZoom.Instance) {
-    this.panZoom = panZoom;
+  public setPanZoom(panZoom: SvgPanZoom.Instance, type = 'cfg') {
+    if (type === 'cfg') this.cfgPanZoom = panZoom;
+    else if (type === 'varDep') this.varPanZoom = panZoom;
   }
 
   public setCFGMermaid(mermaid: string) {
@@ -247,6 +257,7 @@ export class EditorMosaic {
       this.mainEditor.mosaic = backup.mosaic;
       this.mainEditor.structExpandRecord = backup.structExpandRecord;
       this.mainEditor.lineCollection = backup.lineCollection;
+      this.mainEditor.varDepGraph = backup.cfgMermaid;
       this.mainEditor.cfgMermaid = backup.cfgMermaid;
     }
   }
@@ -272,15 +283,29 @@ export class EditorMosaic {
       this.pendingBackup = {
         model: this.mainEditor.editor!.getModel()!,
         viewState: this.mainEditor.editor!.saveViewState(),
-        mosaic: this.mainEditor.mosaic!,
+        mosaic: this.getTidyMosaic(),
         position: this.mainEditor.editor!.getPosition(),
         isEdited: this.mainEditor.isEdited,
         structExpandRecord: this.mainEditor.structExpandRecord!,
         lineCollection: this.mainEditor.lineCollection!,
         cfgMermaid: this.mainEditor.cfgMermaid!,
+        varDepGraph: this.mainEditor.varDepGraph!,
       };
     this.mainEditor.cfgMermaid = backup.cfgMermaid;
+    this.mainEditor.varDepGraph = backup.varDepGraph;
     this.mainEditor.mosaic = backup.mosaic;
+  }
+
+  public getTidyMosaic() {
+    const sliceNotActive = this.mainEditor.lineCollection!.length === 0;
+    let leaves = getLeaves(this.mainEditor.mosaic);
+    if (sliceNotActive) {
+      leaves = leaves.filter(
+        (v) => !v.endsWith('__VarDep') && !v.endsWith('__Slice'),
+      );
+    }
+    leaves = sortGrid(leaves);
+    return this.createMosaic(leaves);
   }
 
   public renameFile(oldId: EditorId, newId: EditorId) {
@@ -308,6 +333,7 @@ export class EditorMosaic {
         structExpandRecord: this.mainEditor.structExpandRecord!,
         lineCollection: this.mainEditor.lineCollection!,
         cfgMermaid: this.mainEditor.cfgMermaid!,
+        varDepGraph: this.mainEditor.varDepGraph!,
       });
       this.mainEditor.mosaic = newId;
     }
@@ -431,6 +457,7 @@ export class EditorMosaic {
       structExpandRecord: new Map(),
       lineCollection: [],
       cfgMermaid: '',
+      varDepGraph: '',
     };
     this.backups.set(id, backup);
   }
@@ -510,7 +537,7 @@ export class EditorMosaic {
         if (this.mainEditor.editor) {
           this.mainEditor.editor.layout();
         }
-        this.panZoom?.resize();
+        this.cfgPanZoom?.resize();
         this.mainEditor.sliceEditor?.layout();
 
         delete this.layoutDebounce;

@@ -18,6 +18,11 @@ export function sortGrid(grids: GridId[]) {
     }
   }
   for (const grid of grids) {
+    if (grid.endsWith('__VarDep')) {
+      result.push(grid);
+    }
+  }
+  for (const grid of grids) {
     if (grid.endsWith('__Flow')) {
       result.push(grid);
     }
@@ -53,6 +58,10 @@ export function getEditorTitle(id: GridId): string {
   if (id.endsWith('__CFG')) {
     const name = id.split('__')[0];
     return `CFG (${name})`;
+  }
+  if (id.endsWith('__VarDep')) {
+    const name = id.split('__')[0];
+    return `VarDep (${name})`;
   }
   return id;
 }

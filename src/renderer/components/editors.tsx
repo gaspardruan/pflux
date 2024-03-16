@@ -12,12 +12,13 @@ import {
 import { Editor } from './editor';
 import { EditorReadOnly } from './editor-read-only';
 import { MaximizeButton, RemoveButton } from './editors-toolbar-button';
-import { CFGId, EditorId, GridId, SliceId } from '../../interface';
+import { CFGId, EditorId, GridId, SliceId, VarDepId } from '../../interface';
 import { AppState } from '../state';
 import { getEditorTitle } from '../../utils/editor-utils';
 import { getAtPath, setAtPath } from '../../utils/js-path';
 import { toggleMonaco } from '../../utils/toggle-monaco';
 import { ControlFlow } from './control-flow';
+import { VarDep } from './var-dep';
 
 const defaultMonacoOptions: MonacoType.editor.IEditorOptions = {
   minimap: {
@@ -211,6 +212,10 @@ export const Editors = observer(({ appState }: EditorsProps) => {
     return <ControlFlow appState={appState} />;
   };
 
+  const renderVarDep = (): React.JSX.Element | null => {
+    return <VarDep appState={appState} />;
+  };
+
   /**
    * Renders a Mosaic tile
    *
@@ -257,6 +262,21 @@ export const Editors = observer(({ appState }: EditorsProps) => {
     if (_id.endsWith('__CFG')) {
       const id = _id as CFGId;
       const content = renderControlFlow();
+      return (
+        <MosaicWindow<GridId>
+          path={path}
+          title={title}
+          renderToolbar={(props: MosaicWindowProps<GridId>) =>
+            renderToolbar(props, id)
+          }
+        >
+          {content}
+        </MosaicWindow>
+      );
+    }
+    if (_id.endsWith('__VarDep')) {
+      const id = _id as VarDepId;
+      const content = renderVarDep();
       return (
         <MosaicWindow<GridId>
           path={path}

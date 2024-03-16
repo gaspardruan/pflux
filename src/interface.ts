@@ -33,14 +33,22 @@ export enum WinType {
   FLOW = 'Flow',
   SLICE = 'Slice',
   CFG = 'CFG',
+  VARDEP = 'VarDep',
 }
 
 export type EditorId = `${string}.${'py'}`;
 export type SliceId = `${string}.${'py'}__Slice`;
 export type CFGId = `${string}.${'py'}__CFG`;
+export type VarDepId = `${string}.${'py'}__VarDep`;
 export type FlowId = `${string}.${'py'}__Flow`;
 export type AnalysisId = `${string}.${'py'}__Analysis`;
-export type GridId = EditorId | SliceId | FlowId | AnalysisId | CFGId;
+export type GridId =
+  | EditorId
+  | SliceId
+  | FlowId
+  | AnalysisId
+  | CFGId
+  | VarDepId;
 
 export type EditorValues = Record<EditorId, string>;
 
@@ -76,7 +84,6 @@ export interface Link {
 }
 
 export interface Variable {
-  id: string;
   name: string;
   line: number;
 }
@@ -87,7 +94,6 @@ export interface VarDep {
 }
 
 export interface SliceResult {
-  lines: string[];
-  vars: Variable[];
-  deps: VarDep[];
+  lines: number[];
+  varDepGraph: string;
 }

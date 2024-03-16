@@ -391,7 +391,7 @@ export function getVarTable(sliceNodes: NodeSet) {
       node.targets.forEach((target) => {
         if (target.type === NAME) {
           const id = vid(target.id, target.location!.first_line);
-          const v = { name: target.id, line: target.location!.first_line, id };
+          const v = { name: target.id, line: target.location!.first_line };
           varTable.set(id, v);
         }
       });
@@ -403,6 +403,7 @@ export function getVarTable(sliceNodes: NodeSet) {
 export function getVarDep(
   dfa: Set<Dataflow>,
   varTable: Map<string, Variable>,
+  useDef: Map<SyntaxNode, Variable[]>,
 ): DepSet {
   const varDep = new DepSet();
   dfa.forEach((flow) => {
@@ -424,8 +425,6 @@ export function getVarDep(
     } else {
       const from = flow.fromNode;
       const to = flow.toNode;
-      console.log(JSON.stringify(from, null, 2));
-      console.log(JSON.stringify(to, null, 2));
       if (to.type === ASSIGN && from.type === ASSIGN) {
         const fromSrc: Map<string, number> = new Map();
         from.targets.forEach((target) => {
@@ -451,10 +450,54 @@ export function getVarDep(
             });
           }
         }
+      } else if (to.type === ASSIGN) {
+        to.targets.forEach((target) => {
+          if (target.type === NAME) {
+            const toId = vid(target.id, target.location!.first_line);
+            const use = useDef.get(from);
+            if (use && varTable.has(toId)) {
+              use.forEach((v) => {
+                const fromId = vid(v.name, v.line);
+                if (varTable.has(fromId)) {
+                  const dep = { from: toId, to: fromId };
+                  varDep.add(dep);
+                }
+              });
+            }
+          }
+        });
       }
     }
   });
   return varDep;
+}
+
+export function getUseDef(dfa: Set<Dataflow>) {
+  const useDef = new Map<SyntaxNode, Variable[]>();
+  dfa.forEach((flow) => {
+    if (flow.fromRef && flow.toRef) {
+      const from = flow.fromRef;
+      const to = flow.toRef;
+      if (from.node.type === ASSIGN && to.node.type !== ASSIGN) {
+        if (!useDef.has(to.node)) {
+          useDef.set(to.node, []);
+        }
+        useDef.get(to.node)!.push({
+          name: from.name,
+          line: from.location!.first_line,
+        });
+      }
+    }
+  });
+  return useDef;
+}
+
+export function toMermaid(vars: Variable[], varDep: VarDep[]) {
+  const nodes = vars.map(
+    (v) => `  ${vid(v.name, v.line)}("\`${v.line}: ${v.name}\`")`,
+  );
+  const edges = varDep.map((dep) => `  ${dep.from} --> ${dep.to}`);
+  return `flowchart TD\n${nodes.join('\n')}\n${edges.join('\n')}`;
 }
 
 export function getSliceResult(code: string, location: Location) {
@@ -466,13 +509,10 @@ export function getSliceResult(code: string, location: Location) {
     module = transFunc2Module(func);
   }
   const [sliceNodes, dfa, seedNode] = sliceVar(module, location);
-  dfa.forEach((flow) => console.log(flow));
 
   const varTable = getVarTable(sliceNodes);
-  varTable.forEach((v) => console.log(v));
-
-  const varDep = getVarDep(dfa, varTable);
-  varDep.items.forEach((dep) => console.log(dep));
+  const useDef = getUseDef(dfa);
+  const varDep = getVarDep(dfa, varTable, useDef);
 
   const lineSet = new Set<number>();
   if (seedNode) sliceNodes.add(seedNode);
@@ -482,8 +522,9 @@ export function getSliceResult(code: string, location: Location) {
 
   const vars = Array.from(varTable.values());
   const deps = varDep.items;
+  const varDepGraph = toMermaid(vars, deps);
   const lines = Array.from(lineSet).sort((a, b) => a - b);
-  return { lines, vars, deps };
+  return { lines, varDepGraph };
 }
 
 export function setupSliceParse() {
@@ -493,7 +534,7 @@ export function setupSliceParse() {
       try {
         return getSliceResult(code, location);
       } catch (e) {
-        return { vars: [], deps: [], lines: [] };
+        return { lines: [], varDepGraph: '' };
       }
     },
   );
