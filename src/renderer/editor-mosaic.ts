@@ -293,6 +293,7 @@ export class EditorMosaic {
       };
     this.mainEditor.cfgMermaid = backup.cfgMermaid;
     this.mainEditor.varDepGraph = backup.varDepGraph;
+    this.mainEditor.sliceEditor = null;
     this.mainEditor.mosaic = backup.mosaic;
   }
 
@@ -414,6 +415,7 @@ export class EditorMosaic {
   }
 
   public disposeSliceEditor() {
+    console.log('disposeSliceEditor');
     this.mainEditor.sliceEditor = null;
   }
 
