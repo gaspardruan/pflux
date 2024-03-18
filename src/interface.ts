@@ -1,4 +1,5 @@
 import { IRange } from 'monaco-editor';
+import { Location } from '@msrvida/python-program-analysis';
 
 export type Files = Map<string, string>;
 
@@ -96,4 +97,13 @@ export interface VarDep {
 export interface SliceResult {
   lines: number[];
   varDepGraph: string;
+}
+
+export interface DefUseCollection {
+  defs: Location[];
+  uses: Location[];
+  lines: number[];
+  defLines: number[];
+  useLines: number[];
+  defUseLines: number[];
 }

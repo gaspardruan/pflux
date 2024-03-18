@@ -19,6 +19,7 @@ import { getAtPath, setAtPath } from '../../utils/js-path';
 import { toggleMonaco } from '../../utils/toggle-monaco';
 import { ControlFlow } from './control-flow';
 import { VarDep } from './var-dep';
+import { MarkTag } from './mark-tag';
 
 const defaultMonacoOptions: MonacoType.editor.IEditorOptions = {
   minimap: {
@@ -154,8 +155,9 @@ export const Editors = observer(({ appState }: EditorsProps) => {
     return (
       <div>
         {/* Left */}
-        <div>
+        <div className="toolbar-left">
           <h5>{title}</h5>
+          <MarkTag appState={appState} />
         </div>
         {/* Middle */}
         <div />

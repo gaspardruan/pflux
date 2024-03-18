@@ -3,6 +3,7 @@ import { action, computed, makeObservable, observable, reaction } from 'mobx';
 import { MosaicDirection, MosaicNode, getLeaves } from 'react-mosaic-component';
 
 import {
+  DefUseCollection,
   EditorId,
   EditorValues,
   GridId,
@@ -21,6 +22,7 @@ interface EditorBackup {
   isEdited: boolean;
   structExpandRecord: Map<string, boolean>;
   lineCollection: Array<number>;
+  defUseCollection: DefUseCollection;
   cfgMermaid: string;
   varDepGraph: string;
 }
@@ -35,6 +37,7 @@ export class EditorMosaic {
     isEdited: boolean;
     structExpandRecord: Map<string, boolean> | null;
     lineCollection: Array<number> | null;
+    defUseCollection: DefUseCollection | null;
     cfgMermaid: string | null;
     varDepGraph: string | null;
   } = {
@@ -45,6 +48,7 @@ export class EditorMosaic {
     isEdited: false,
     structExpandRecord: null,
     lineCollection: null,
+    defUseCollection: null,
     cfgMermaid: null,
     varDepGraph: null,
   };
@@ -100,6 +104,9 @@ export class EditorMosaic {
   public tempLineDecorations: MonacoType.editor.IEditorDecorationsCollection | null =
     null;
 
+  public defUseTempLineDecoration: MonacoType.editor.IEditorDecorationsCollection | null =
+    null;
+
   public cfgPanZoom: SvgPanZoom.Instance | null = null;
   public varPanZoom: SvgPanZoom.Instance | null = null;
 
@@ -125,6 +132,7 @@ export class EditorMosaic {
       set: action,
       setCFGMermaid: action,
       setCursorWord: action,
+      setDefUseCollection: action,
       setFileContent2: action,
       setFocusedGridId: action,
       setIsEdited: action,
@@ -200,6 +208,10 @@ export class EditorMosaic {
     this.mainEditor.lineCollection = val;
   }
 
+  public setDefUseCollection(val: DefUseCollection) {
+    this.mainEditor.defUseCollection = val;
+  }
+
   public setVarDepGraph(val: string) {
     this.mainEditor.varDepGraph = val;
   }
@@ -257,6 +269,7 @@ export class EditorMosaic {
       this.mainEditor.mosaic = backup.mosaic;
       this.mainEditor.structExpandRecord = backup.structExpandRecord;
       this.mainEditor.lineCollection = backup.lineCollection;
+      this.mainEditor.defUseCollection = backup.defUseCollection;
       this.mainEditor.varDepGraph = backup.cfgMermaid;
       this.mainEditor.cfgMermaid = backup.cfgMermaid;
     }
@@ -288,6 +301,7 @@ export class EditorMosaic {
         isEdited: this.mainEditor.isEdited,
         structExpandRecord: this.mainEditor.structExpandRecord!,
         lineCollection: this.mainEditor.lineCollection!,
+        defUseCollection: this.mainEditor.defUseCollection!,
         cfgMermaid: this.mainEditor.cfgMermaid!,
         varDepGraph: this.mainEditor.varDepGraph!,
       };
@@ -333,6 +347,7 @@ export class EditorMosaic {
         isEdited: this.mainEditor.isEdited,
         structExpandRecord: this.mainEditor.structExpandRecord!,
         lineCollection: this.mainEditor.lineCollection!,
+        defUseCollection: this.mainEditor.defUseCollection!,
         cfgMermaid: this.mainEditor.cfgMermaid!,
         varDepGraph: this.mainEditor.varDepGraph!,
       });
@@ -365,6 +380,7 @@ export class EditorMosaic {
     this.mainEditor.isEdited = backup.isEdited;
     this.mainEditor.structExpandRecord = backup.structExpandRecord;
     this.mainEditor.lineCollection = backup.lineCollection;
+    this.mainEditor.defUseCollection = backup.defUseCollection;
     if (this.mainEditor.lineCollection.length > 0) {
       const decorations = this.mainEditor.lineCollection.map((line) => {
         return {
@@ -373,6 +389,13 @@ export class EditorMosaic {
         };
       });
       this.tempLineDecorations =
+        this.mainEditor.editor!.createDecorationsCollection(decorations);
+    }
+    if (this.mainEditor.defUseCollection.lines.length > 0) {
+      const decorations = this.getDefUseDecorations(
+        this.mainEditor.defUseCollection,
+      );
+      this.defUseTempLineDecoration =
         this.mainEditor.editor!.createDecorationsCollection(decorations);
     }
     if (!this.mainEditor.isEdited) {
@@ -402,6 +425,81 @@ export class EditorMosaic {
     });
 
     this.focusedGridId = id;
+  }
+
+  public getDefUseDecorations(
+    defUseCollection: DefUseCollection,
+  ): MonacoType.editor.IModelDeltaDecoration[] {
+    const decorations: MonacoType.editor.IModelDeltaDecoration[] = [];
+    for (const line of defUseCollection.lines) {
+      const range = new MonacoType.Range(line, 1, line, 2);
+      decorations.push({
+        range,
+        options: {
+          isWholeLine: true,
+          blockClassName: 'def-use-line-highlight',
+        },
+      });
+    }
+    for (const loc of defUseCollection.defs) {
+      const range = new MonacoType.Range(
+        loc.first_line,
+        loc.first_column,
+        loc.last_line,
+        loc.last_column,
+      );
+      decorations.push({
+        range,
+        options: {
+          inlineClassName: 'def-var-highlight',
+        },
+      });
+    }
+    for (const loc of defUseCollection.uses) {
+      const range = new MonacoType.Range(
+        loc.first_line,
+        loc.first_column,
+        loc.last_line,
+        loc.last_column,
+      );
+      decorations.push({
+        range,
+        options: {
+          inlineClassName: 'use-var-highlight',
+        },
+      });
+    }
+    for (const line of defUseCollection.defLines) {
+      const range = new MonacoType.Range(line, 1, line, 2);
+      decorations.push({
+        range,
+        options: {
+          isWholeLine: true,
+          linesDecorationsClassName: 'def-line-left-mark',
+        },
+      });
+    }
+    for (const line of defUseCollection.useLines) {
+      const range = new MonacoType.Range(line, 1, line, 2);
+      decorations.push({
+        range,
+        options: {
+          isWholeLine: true,
+          linesDecorationsClassName: 'use-line-left-mark',
+        },
+      });
+    }
+    for (const line of defUseCollection.defUseLines) {
+      const range = new MonacoType.Range(line, 1, line, 2);
+      decorations.push({
+        range,
+        options: {
+          isWholeLine: true,
+          linesDecorationsClassName: 'def-use-line-left-mark',
+        },
+      });
+    }
+    return decorations;
   }
 
   public setSliceEditor(id: SliceId, editor: Editor) {
@@ -458,6 +556,14 @@ export class EditorMosaic {
       isEdited,
       structExpandRecord: new Map(),
       lineCollection: [],
+      defUseCollection: {
+        lines: [],
+        defs: [],
+        uses: [],
+        defLines: [],
+        useLines: [],
+        defUseLines: [],
+      },
       cfgMermaid: '',
       varDepGraph: '',
     };

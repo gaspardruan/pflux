@@ -11,15 +11,17 @@ import {
   NAME,
   CALL,
   Name,
-  Def,
-  DEF,
-  parse,
-  MODULE,
   Dataflow,
 } from '@msrvida/python-program-analysis';
 import { ipcMain } from 'electron';
+import {
+  within,
+  isSameLocation,
+  getModuleByLocation,
+  findSeedName,
+} from './common';
 import { IpcEvents } from '../../ipc-events';
-import { Variable, VarDep } from '../../interface';
+import { Variable, VarDep, SliceResult } from '../../interface';
 
 export class LocationSet extends SSet<Location> {
   constructor(...items: Location[]) {
@@ -58,18 +60,6 @@ function vid(n: string, l: number): string {
   return `${n}_${l}`;
 }
 
-function within(inner: Location, outer: Location): boolean {
-  const leftWithin =
-    outer.first_line < inner.first_line ||
-    (outer.first_line === inner.first_line &&
-      outer.first_column <= inner.first_column);
-  const rightWithin =
-    outer.last_line > inner.last_line ||
-    (outer.last_line === inner.last_line &&
-      outer.last_column >= inner.last_column);
-  return leftWithin && rightWithin;
-}
-
 function isPositionBetween(
   line: number,
   column: number,
@@ -104,15 +94,6 @@ function intersect(l1: Location, l2: Location): boolean {
     ) ||
     within(l1, l2) ||
     within(l2, l1)
-  );
-}
-
-function isSameLocation(l1: Location, l2: Location): boolean {
-  return (
-    l1.first_line === l2.first_line &&
-    l1.first_column === l2.first_column &&
-    l1.last_line === l2.last_line &&
-    l1.last_column === l2.last_column
   );
 }
 
@@ -276,19 +257,6 @@ function findSeedStatementNodes(
   return seedStatementNodes;
 }
 
-export function findSeedName(seedNode: SyntaxNode, seedLocation: Location) {
-  let name = '';
-  walk(seedNode, {
-    onEnterNode: (node) => {
-      if (node.type === NAME && isSameLocation(node.location!, seedLocation)) {
-        name = node.id;
-      }
-    },
-  });
-  if (name === '') throw new Error('Please choose a variable');
-  return name;
-}
-
 export function nameCount(_node: SyntaxNode) {
   const nameSet = new Set<string>();
   const funcSet = new Set<string>();
@@ -344,44 +312,6 @@ export function getVarName(_node: SyntaxNode) {
     }
   });
   return rltSet;
-}
-
-export function findFunctionAtLocation(
-  code: string,
-  location: Location,
-): [Def | null, Module] {
-  const funcs: Def[] = [];
-  const tree = parse(code);
-  walk(tree, {
-    onEnterNode: (node) => {
-      if (node.type === DEF && within(location, node.location!)) {
-        funcs.push(node);
-      }
-    },
-  });
-  if (funcs.length === 0) {
-    return [null, tree];
-  }
-  if (funcs.length === 1) {
-    return [funcs[0], tree];
-  }
-  let index = 0;
-  let firstLine = 0;
-  funcs.forEach((func, i) => {
-    if (func.location!.first_line > firstLine) {
-      index = i;
-      firstLine = func.location!.first_line;
-    }
-  });
-  return [funcs[index], tree];
-}
-
-export function transFunc2Module(func: Def): Module {
-  return {
-    type: MODULE,
-    code: func.code,
-    location: func.location,
-  };
 }
 
 export function getVarTable(sliceNodes: NodeSet) {
@@ -500,14 +430,8 @@ export function toMermaid(vars: Variable[], varDep: VarDep[]) {
   return `flowchart TD\n${nodes.join('\n')}\n${edges.join('\n')}`;
 }
 
-export function getSliceResult(code: string, location: Location) {
-  const [func, tree] = findFunctionAtLocation(code, location);
-  let module: Module;
-  if (func === null) {
-    module = tree;
-  } else {
-    module = transFunc2Module(func);
-  }
+export function getSliceResult(code: string, location: Location): SliceResult {
+  const module = getModuleByLocation(code, location);
   const [sliceNodes, dfa, seedNode] = sliceVar(module, location);
 
   const varTable = getVarTable(sliceNodes);

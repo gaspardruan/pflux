@@ -58,7 +58,7 @@ export const defaultDark: LoadedFluxTheme = {
   editor: {
     base: 'vs-dark',
     inherit: true,
-    rules: [{ token: 'custom-date', foreground: '008800' }],
+    rules: [{ token: 'custom-date', foreground: '#008800' }],
     colors: {
       'editor.background': '#2f3241',
     },

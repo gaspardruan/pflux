@@ -40,9 +40,66 @@
   opacity: 0.4;
 }
 
+.def-use-line-highlight {
+  background-color: @foreground-2;
+  opacity: 0.4;
+}
+
+.def-var-highlight {
+  font-weight: bold;
+  background-color: @green3;
+}
+
+.use-var-highlight {
+  font-weight: bold;
+  background-color: @blue3;
+}
+
+.def-line-left-mark {
+  margin-left: 2px;
+  background-color: @green3;
+}
+
+.use-line-left-mark {
+  left: 2px;
+  background-color: @blue3;
+}
+
+.def-use-line-left-mark {
+  background-image: linear-gradient(
+    to right,
+    @green3,
+    @green3 50%,
+    @blue3 50%,
+    @blue3
+  );
+}
+
 .mermaid {
   width: 100%;
   height: 100%;
   display: flex;
   max-width: none;
+}
+
+.toolbar-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .mark-group {
+    margin-left: 10px;
+    .mark-tag {
+      font-size: 10px;
+      height: 12px;
+      min-height: 12px;
+    }
+
+    .mark-tag-def {
+      color: @green3;
+    }
+    .mark-tag-use {
+      color: @blue3;
+    }
+  }
 }

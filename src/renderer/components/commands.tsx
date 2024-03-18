@@ -13,8 +13,11 @@ export const Commands = observer(({ appState }: CommandsProps) => {
   const {
     title,
     sliceActive,
+    defUseActive,
     parseSlice,
     clearSlice,
+    setupDefUse,
+    clearDefUse,
     sliceExtractActive,
     varDepActive,
     cfgButtonEnabled,
@@ -35,6 +38,14 @@ export const Commands = observer(({ appState }: CommandsProps) => {
       clearSlice();
     } else {
       parseSlice();
+    }
+  };
+
+  const handleDefUseClick = () => {
+    if (defUseActive) {
+      clearDefUse();
+    } else {
+      setupDefUse();
     }
   };
 
@@ -90,8 +101,9 @@ export const Commands = observer(({ appState }: CommandsProps) => {
           <Button
             active={sliceActive}
             disabled={
-              (!cursorPosition || !cursorWord || cfgButtonEnabled) &&
-              !sliceActive
+              defUseActive ||
+              ((!cursorPosition || !cursorWord || cfgButtonEnabled) &&
+                !sliceActive)
             }
             icon="waves"
             text="Slice"
@@ -114,9 +126,15 @@ export const Commands = observer(({ appState }: CommandsProps) => {
         </ButtonGroup>
         <ButtonGroup fill>
           <Button
+            active={defUseActive}
+            disabled={
+              sliceActive ||
+              ((!cursorPosition || !cursorWord || cfgButtonEnabled) &&
+                !defUseActive)
+            }
             icon="flows"
-            text="Dataflow"
-            onClick={() => console.log('Dataflow clicked.')}
+            text="Def-Use"
+            onClick={handleDefUseClick}
           />
           <Button
             icon="two-columns"

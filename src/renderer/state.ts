@@ -71,7 +71,9 @@ export class AppState {
     makeObservable(this, {
       cfgButtonEnabled: computed,
       clearSlice: action,
+      clearDefUse: action,
       controlFlowActive: computed,
+      defUseActive: computed,
       editorMosaic: observable,
       fileTreeState: observable,
       fontFamily: observable,
@@ -108,6 +110,8 @@ export class AppState {
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
+    this.setupDefUse = this.setupDefUse.bind(this);
+    this.clearDefUse = this.clearDefUse.bind(this);
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
@@ -162,6 +166,10 @@ export class AppState {
       return content.trim().startsWith('def');
     }
     return false;
+  }
+
+  get defUseActive() {
+    return this.editorMosaic.mainEditor.defUseCollection!.lines.length > 0;
   }
 
   public setTheme(fileName?: string) {
@@ -317,6 +325,47 @@ export class AppState {
     if (this.editorMosaic.tempLineDecorations) {
       this.editorMosaic.tempLineDecorations.clear();
       this.editorMosaic.tempLineDecorations = null;
+    }
+  }
+
+  public setupDefUse() {
+    const em = this.editorMosaic;
+    const loc = {
+      first_line: em.cursorPosition!.lineNumber,
+      last_line: em.cursorPosition!.lineNumber,
+      first_column: em.cursorWord!.startColumn - 1,
+      last_column: em.cursorWord!.endColumn - 1,
+    };
+    window.ElectronFlux.getDefUseLines(em.fileContent2, loc)
+      .then((res) => {
+        if (res.lines.length === 0) {
+          this.showErrorDialog(
+            'Please click on a variable name which has DEF and USE lines.',
+          );
+        } else {
+          em.setDefUseCollection(res);
+          const decorations = em.getDefUseDecorations(res);
+          em.defUseTempLineDecoration = // not observable
+            em.mainEditor.editor!.createDecorationsCollection(decorations);
+        }
+      })
+      .catch(() => {
+        // do nothing
+      });
+  }
+
+  public clearDefUse() {
+    this.editorMosaic.mainEditor.defUseCollection = {
+      defs: [],
+      uses: [],
+      lines: [],
+      defLines: [],
+      useLines: [],
+      defUseLines: [],
+    };
+    if (this.editorMosaic.defUseTempLineDecoration) {
+      this.editorMosaic.defUseTempLineDecoration.clear();
+      this.editorMosaic.defUseTempLineDecoration = null;
     }
   }
 

@@ -1,9 +1,15 @@
 // Disable no-unused-vars, broken for spread args
-/* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import { Location } from '@msrvida/python-program-analysis';
 
-import { EditorValues, Files, FluxEvent } from '../interface';
+import {
+  DefUseCollection,
+  EditorValues,
+  Files,
+  FluxEvent,
+  SliceResult,
+  StructNodeInfo,
+} from '../interface';
 import { IpcEvents } from '../ipc-events';
 
 const channelMapping: Record<FluxEvent, IpcEvents> = {
@@ -53,11 +59,14 @@ const electronHandler = {
       newName,
     );
   },
-  getControlFlow(code: string, line: number) {
+  getControlFlow(code: string, line: number): Promise<string> {
     return ipcRenderer.invoke(IpcEvents.CONTROL_FLOW, code, line);
   },
   getFiles(folder: string): Promise<EditorValues> {
     return ipcRenderer.invoke(IpcEvents.FS_GET_FILES, folder);
+  },
+  getDefUseLines(code: string, location: Location): Promise<DefUseCollection> {
+    return ipcRenderer.invoke(IpcEvents.DEF_USE_LINES, code, location);
   },
   macTitlebarClicked() {
     ipcRenderer.send(IpcEvents.CLICK_TITLEBAR_MAC);
@@ -73,13 +82,13 @@ const electronHandler = {
       e.ports[0].postMessage({ folderPath, files: [...files.entries()] });
     });
   },
-  parseStruct(code: string) {
+  parseStruct(code: string): Promise<StructNodeInfo[]> {
     return ipcRenderer.invoke(IpcEvents.PARSE_STRUCT, code);
   },
-  parseSlice(code: string, location: Location) {
+  parseSlice(code: string, location: Location): Promise<SliceResult> {
     return ipcRenderer.invoke(IpcEvents.PARSE_SLICE, code, location);
   },
-  pathExists: (path: string) =>
+  pathExists: (path: string): boolean =>
     ipcRenderer.sendSync(IpcEvents.PATH_EXISTS, path),
   platform: process.platform,
   removeAllListeners(type: FluxEvent) {
