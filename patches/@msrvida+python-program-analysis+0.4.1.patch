@@ -1,0 +1,13 @@
+diff --git a/node_modules/@msrvida/python-program-analysis/dist/es5/data-flow.js b/node_modules/@msrvida/python-program-analysis/dist/es5/data-flow.js
+index 030452f..122353c 100644
+--- a/node_modules/@msrvida/python-program-analysis/dist/es5/data-flow.js
++++ b/node_modules/@msrvida/python-program-analysis/dist/es5/data-flow.js
+@@ -670,6 +670,7 @@ function getDataflowId(df) {
+     if (!df.toNode.location) {
+         console.log('*** TO', df.toNode, df.toNode.location);
+     }
+-    return getNodeId(df.fromNode) + "->" + getNodeId(df.toNode);
++    var refId = df.fromRef && df.toRef ? df.fromRef.name + "->" + df.toRef.name : "";
++    return getNodeId(df.fromNode) + "->" + getNodeId(df.toNode) + refId;
+ }
+ //# sourceMappingURL=data-flow.js.map
