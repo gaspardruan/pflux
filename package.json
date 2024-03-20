@@ -99,6 +99,7 @@
     "@blueprintjs/core": "^5.8.2",
     "@blueprintjs/icons": "^5.7.1",
     "@blueprintjs/select": "^5.1.1",
+    "@blueprintjs/table": "^5.1.2",
     "@msrvida/python-program-analysis": "^0.4.1",
     "@tabler/icons-react": "^2.47.0",
     "classnames": "^2.5.1",

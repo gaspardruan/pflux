@@ -73,6 +73,7 @@ export class AppState {
       clearSlice: action,
       clearDefUse: action,
       controlFlowActive: computed,
+      dcPathExtractActive: computed,
       defUseActive: computed,
       editorMosaic: observable,
       fileTreeState: observable,
@@ -170,6 +171,11 @@ export class AppState {
 
   get defUseActive() {
     return this.editorMosaic.mainEditor.defUseCollection!.lines.length > 0;
+  }
+
+  get dcPathExtractActive() {
+    const { mosaic, id } = this.editorMosaic.mainEditor;
+    return getLeaves(mosaic).some((v) => v === getGridId(WinType.FLOW, id!));
   }
 
   public setTheme(fileName?: string) {
@@ -356,12 +362,14 @@ export class AppState {
 
   public clearDefUse() {
     this.editorMosaic.mainEditor.defUseCollection = {
+      varName: '',
       defs: [],
       uses: [],
       lines: [],
       defLines: [],
       useLines: [],
       defUseLines: [],
+      dcPaths: [],
     };
     if (this.editorMosaic.defUseTempLineDecoration) {
       this.editorMosaic.defUseTempLineDecoration.clear();

@@ -42,14 +42,14 @@ export function readBlocks(ast: Module): [Block[], Map<number, Link>] {
       conn.set(id(block.id, yes.id), {
         from: block.id,
         to: yes.id,
-        label: 'yes',
+        label: 'True',
       });
       // fix the else parsing bug, else only has one successor
       if (block.hint !== 'else cond')
         conn.set(id(block.id, no.id), {
           from: block.id,
           to: no.id,
-          label: 'no',
+          label: 'False',
         });
     } else if (successors.length > 2) throw new Error('more than 2 successors');
   });

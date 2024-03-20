@@ -100,10 +100,23 @@ export interface SliceResult {
 }
 
 export interface DefUseCollection {
+  varName: string;
   defs: Location[];
   uses: Location[];
   lines: number[];
   defLines: number[];
   useLines: number[];
   defUseLines: number[];
+  dcPaths: DCPath[];
+}
+
+export enum UseType {
+  C = 'compute',
+  P = 'predicate',
+}
+
+export interface DCPath {
+  startLine: number;
+  endLine: number;
+  useType: UseType;
 }

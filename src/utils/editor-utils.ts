@@ -49,7 +49,7 @@ export function getEditorTitle(id: GridId): string {
   }
   if (id.endsWith('__Flow')) {
     const name = id.split('__')[0];
-    return `Flow (${name})`;
+    return `DCPath (${name})`;
   }
   if (id.endsWith('__Analysis')) {
     const name = id.split('__')[0];

@@ -14,13 +14,14 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     title,
     sliceActive,
     defUseActive,
+    sliceExtractActive,
+    varDepActive,
+    cfgButtonEnabled,
+    dcPathExtractActive,
     parseSlice,
     clearSlice,
     setupDefUse,
     clearDefUse,
-    sliceExtractActive,
-    varDepActive,
-    cfgButtonEnabled,
     setupControlFlow,
   } = appState;
   const { cursorPosition, cursorWord, show, hide, disposeSliceEditor } =
@@ -70,6 +71,14 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     }
   };
 
+  const handleDCExtractClick = () => {
+    if (dcPathExtractActive) {
+      hide(getGridId(WinType.FLOW, id!));
+    } else {
+      show(getGridId(WinType.FLOW, id!));
+    }
+  };
+
   return (
     <div
       className={
@@ -93,6 +102,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             disabled={!cfgButtonEnabled}
             icon="flow-branch"
             text="Control Flow"
+            title="Please place the cursor on a function def line"
             onClick={handleCFGClick}
           />
         </ButtonGroup>
@@ -107,6 +117,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             }
             icon="waves"
             text="Slice"
+            title="Please place the cursor on a variable name"
             onClick={handleSliceClick}
           />
           <Button
@@ -114,6 +125,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             active={sliceExtractActive}
             icon="drawer-left"
             text="Extract"
+            title="Slice must be active firstly"
             onClick={() => handleExtractClick()}
           />
           <Button
@@ -121,6 +133,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             active={varDepActive}
             icon="graph"
             text="VarDep"
+            title="Slice must be active firstly"
             onClick={handleVarDepClick}
           />
         </ButtonGroup>
@@ -134,12 +147,16 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             }
             icon="flows"
             text="Def-Use"
+            title="Please place the cursor on a variable name"
             onClick={handleDefUseClick}
           />
           <Button
+            active={dcPathExtractActive}
+            disabled={!dcPathExtractActive && !defUseActive}
             icon="two-columns"
-            text="Extract"
-            onClick={() => console.log('Dataflow Extract clicked.')}
+            text="Extract-DC-Path"
+            title="Def-Use must be active firstly"
+            onClick={handleDCExtractClick}
           />
         </ButtonGroup>
       </div>

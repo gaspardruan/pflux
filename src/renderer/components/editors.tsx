@@ -12,7 +12,14 @@ import {
 import { Editor } from './editor';
 import { EditorReadOnly } from './editor-read-only';
 import { MaximizeButton, RemoveButton } from './editors-toolbar-button';
-import { CFGId, EditorId, GridId, SliceId, VarDepId } from '../../interface';
+import {
+  CFGId,
+  EditorId,
+  FlowId,
+  GridId,
+  SliceId,
+  VarDepId,
+} from '../../interface';
 import { AppState } from '../state';
 import { getEditorTitle } from '../../utils/editor-utils';
 import { getAtPath, setAtPath } from '../../utils/js-path';
@@ -20,6 +27,7 @@ import { toggleMonaco } from '../../utils/toggle-monaco';
 import { ControlFlow } from './control-flow';
 import { VarDep } from './var-dep';
 import { MarkTag } from './mark-tag';
+import { DCPath } from './dc-path';
 
 const defaultMonacoOptions: MonacoType.editor.IEditorOptions = {
   minimap: {
@@ -148,7 +156,7 @@ export const Editors = observer(({ appState }: EditorsProps) => {
    * @param {EditorId} id
    * @returns {JSX.Element}
    */
-  const renderToolbar = (
+  const renderEditorToolbar = (
     { title }: MosaicWindowProps<GridId>,
     id: GridId,
   ): React.JSX.Element => {
@@ -158,6 +166,34 @@ export const Editors = observer(({ appState }: EditorsProps) => {
         <div className="toolbar-left">
           <h5>{title}</h5>
           <MarkTag appState={appState} />
+        </div>
+        {/* Middle */}
+        <div />
+        {/* Right */}
+        <div className="mosaic-controls">
+          <MaximizeButton id={id} appState={appState} />
+          <RemoveButton id={id} appState={appState} />
+        </div>
+      </div>
+    );
+  };
+
+  /**
+   * Renders the little tool bar on top of each panel
+   *
+   * @param {MosaicWindowProps<GridId>} { title }
+   * @param {EditorId} id
+   * @returns {JSX.Element}
+   */
+  const renderToolbar = (
+    { title }: MosaicWindowProps<GridId>,
+    id: GridId,
+  ): React.JSX.Element => {
+    return (
+      <div>
+        {/* Left */}
+        <div>
+          <h5>{title}</h5>
         </div>
         {/* Middle */}
         <div />
@@ -218,6 +254,10 @@ export const Editors = observer(({ appState }: EditorsProps) => {
     return <VarDep appState={appState} />;
   };
 
+  const renderDCPath = (): React.JSX.Element | null => {
+    return <DCPath appState={appState} />;
+  };
+
   /**
    * Renders a Mosaic tile
    *
@@ -239,7 +279,7 @@ export const Editors = observer(({ appState }: EditorsProps) => {
           path={path}
           title={title}
           renderToolbar={(props: MosaicWindowProps<GridId>) =>
-            renderToolbar(props, id)
+            renderEditorToolbar(props, id)
           }
         >
           {content}
@@ -279,6 +319,21 @@ export const Editors = observer(({ appState }: EditorsProps) => {
     if (_id.endsWith('__VarDep')) {
       const id = _id as VarDepId;
       const content = renderVarDep();
+      return (
+        <MosaicWindow<GridId>
+          path={path}
+          title={title}
+          renderToolbar={(props: MosaicWindowProps<GridId>) =>
+            renderToolbar(props, id)
+          }
+        >
+          {content}
+        </MosaicWindow>
+      );
+    }
+    if (_id.endsWith('__Flow')) {
+      const id = _id as FlowId;
+      const content = renderDCPath();
       return (
         <MosaicWindow<GridId>
           path={path}

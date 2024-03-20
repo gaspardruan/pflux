@@ -1,15 +1,22 @@
 import { ipcMain } from 'electron';
-import { Location } from '@msrvida/python-program-analysis';
-import { sliceVar } from './slice-parse';
+import {
+  ASSIGN,
+  CALL,
+  ControlFlowGraph,
+  DataflowAnalyzer,
+  Location,
+} from '@msrvida/python-program-analysis';
 import { getModuleByLocation, findSeedName } from './common';
-import { DefUseCollection } from '../../interface';
+import { DefUseCollection, DCPath, UseType } from '../../interface';
 
 export function getDefUseLines(
   code: string,
   location: Location,
 ): DefUseCollection {
   const module = getModuleByLocation(code, location);
-  const dfa = sliceVar(module, location)[1];
+  const cfg = new ControlFlowGraph(module);
+  const dataflowAnalyzer = new DataflowAnalyzer();
+  const dfa = dataflowAnalyzer.analyze(cfg).dataflows;
 
   const varName = findSeedName(module, location);
   const defSet = new Set<Location>();
@@ -17,8 +24,9 @@ export function getDefUseLines(
   const defLineSet = new Set<number>();
   const useLineSet = new Set<number>();
   const lineSet = new Set<number>();
+  const dcPaths: DCPath[] = [];
 
-  dfa.forEach((flow) => {
+  dfa.items.forEach((flow) => {
     if (
       flow.fromRef &&
       flow.toRef &&
@@ -31,6 +39,15 @@ export function getDefUseLines(
       useLineSet.add(flow.toRef.location.first_line);
       lineSet.add(flow.fromRef.location.first_line);
       lineSet.add(flow.toRef.location.first_line);
+
+      dcPaths.push({
+        startLine: flow.fromRef.location.first_line,
+        endLine: flow.toRef.location.first_line,
+        useType:
+          flow.toRef.node.type === ASSIGN || flow.toRef.node.type === CALL
+            ? UseType.C
+            : UseType.P,
+      });
     }
   });
 
@@ -58,12 +75,14 @@ export function getDefUseLines(
   });
 
   return {
+    varName,
     defs,
     uses,
     lines: Array.from(lineSet),
     defLines: Array.from(defLineSet),
     useLines: Array.from(useLineSet),
     defUseLines,
+    dcPaths,
   };
 }
 
@@ -74,12 +93,14 @@ export function setupDefUseLines() {
     } catch (e) {
       console.error(e);
       return {
+        varName: '',
         defs: [],
         uses: [],
         lines: [],
         defLines: [],
         useLines: [],
         defUseLines: [],
+        dcPaths: [],
       };
     }
   });
