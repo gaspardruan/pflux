@@ -355,7 +355,7 @@ export const Editors = observer(({ appState }: EditorsProps) => {
 
   return (
     <Mosaic<GridId>
-      className={`focused__${focusedId}`}
+      className={`focused__${focusedId} mainEditor`}
       onChange={onChange}
       value={appState.editorMosaic.mainEditor.mosaic}
       renderTile={renderTile}
