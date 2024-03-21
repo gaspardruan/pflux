@@ -1,9 +1,11 @@
 import { Button, ButtonGroup } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
+import { toJS } from 'mobx';
+import { MosaicNode, MosaicParent } from 'react-mosaic-component';
 
 import { AppState } from '../state';
 import { getGridId } from '../../utils/editor-utils';
-import { WinType } from '../../interface';
+import { WinType, WrapperEditorId } from '../../interface';
 
 interface CommandsProps {
   appState: AppState;
@@ -18,6 +20,9 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     varDepActive,
     cfgButtonEnabled,
     dcPathExtractActive,
+    isInputShowing,
+    globalMosaic,
+    setGloablMosaic,
     parseSlice,
     clearSlice,
     setupDefUse,
@@ -77,6 +82,16 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     } else {
       show(getGridId(WinType.FLOW, id!));
     }
+  };
+
+  const handleToggleInputClick = () => {
+    const mosaicTree: MosaicNode<WrapperEditorId> = toJS(globalMosaic);
+    if (isInputShowing) {
+      (mosaicTree as MosaicParent<WrapperEditorId>).splitPercentage = 0;
+    } else {
+      (mosaicTree as MosaicParent<WrapperEditorId>).splitPercentage = 25;
+    }
+    setGloablMosaic(mosaicTree);
   };
 
   return (
@@ -157,6 +172,16 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             text="Extract-DC-Path"
             title="Def-Use must be active firstly"
             onClick={handleDCExtractClick}
+          />
+        </ButtonGroup>
+
+        <ButtonGroup fill>
+          <Button
+            active={isInputShowing}
+            icon="manually-entered-data"
+            text="TestCaseInput"
+            title="Toggle test case input area"
+            onClick={handleToggleInputClick}
           />
         </ButtonGroup>
       </div>

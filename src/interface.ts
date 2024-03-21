@@ -12,6 +12,8 @@ export enum GlobalSetting {
   folderName = 'folderName',
 }
 
+export type WrapperEditorId = 'sidebar' | 'editors' | 'input';
+
 export interface GenericDialogOptions {
   type: GenericDialogType;
   ok: string;

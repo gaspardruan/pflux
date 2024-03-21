@@ -1,42 +1,38 @@
-import { useState } from 'react';
+import { observer } from 'mobx-react';
 import { Mosaic, MosaicNode } from 'react-mosaic-component';
 
 import { Editors } from './editors';
 import { Sidebar } from './sidebar';
 import { AppState } from '../state';
+import { WrapperEditorId } from '../../interface';
+import { TestCaseInput } from './test-case-input';
 
 interface WrapperProps {
   appState: AppState;
 }
 
-export type WrapperId = 'sidebar' | 'editors';
-
 // TODO: refactor the state;
-export const SidebarEditorsWrapper = ({ appState }: WrapperProps) => {
+export const SidebarEditorsWrapper = observer(({ appState }: WrapperProps) => {
   const MOSAIC_ELEMENTS = {
     sidebar: <Sidebar appState={appState} />,
     editors: <Editors appState={appState} />,
+    input: <TestCaseInput appState={appState} />,
   };
 
-  const [mosaic, setMosaic] = useState<MosaicNode<WrapperId> | null>({
-    direction: 'row',
-    first: 'sidebar',
-    second: 'editors',
-    splitPercentage: 25,
-  });
+  const { globalMosaic, setGloablMosaic } = appState;
 
-  const onChange = (rootNode: MosaicNode<WrapperId> | null) => {
-    setMosaic(rootNode);
+  const onChange = (rootNode: MosaicNode<WrapperEditorId> | null) => {
+    setGloablMosaic(rootNode);
   };
 
   return (
-    <Mosaic<WrapperId>
+    <Mosaic<WrapperEditorId>
       renderTile={(id: string) =>
         MOSAIC_ELEMENTS[id as keyof typeof MOSAIC_ELEMENTS]
       }
       resize={{ minimumPaneSizePercentage: 15 }}
-      value={mosaic}
+      value={globalMosaic}
       onChange={onChange}
     />
   );
-};
+});
