@@ -10,6 +10,9 @@ import {
   walk,
   DEF,
   MODULE,
+  ASSIGN,
+  NAME,
+  Parameter,
 } from '@msrvida/python-program-analysis';
 import { ipcMain } from 'electron';
 
@@ -124,16 +127,31 @@ export function getShape(hint: string, isBlank: boolean, isStart: boolean) {
   }
 }
 
-export function toMermaid(blocks: Block[], conn: Link[]): string {
-  const nodes = blocks.map((b) => {
+export function toMermaid(
+  blocks: Block[],
+  conn: Link[],
+  isFixed: boolean,
+): string {
+  const nodes = blocks.map((b, bIndex) => {
     const str =
       b.statements
-        .map(
-          (s) =>
-            `${s.location?.first_line}: ${
-              s.type === PASS ? 'pass' : printNode(s)
-            }`,
-        )
+        .map((s, sIndex) => {
+          if (isFixed && bIndex === 0 && sIndex === 0) {
+            if (s.type === ASSIGN) {
+              const params = s.targets
+                .map((t) => {
+                  if (t.type === NAME) return t.id;
+                  throw new Error('Function params parsing error');
+                })
+                .join(', ');
+              return `${s.location?.first_line}: Params: ${params}`;
+            }
+            throw new Error('Function params parsing error');
+          }
+          return `${s.location?.first_line}: ${
+            s.type === PASS ? 'pass' : printNode(s)
+          }`;
+        })
         .join('\n')
         .replace(/"/g, '#quot;')
         .replace(/</g, ' < ') || (b.hint === 'entry' ? 'Start' : ' ');
@@ -151,7 +169,10 @@ export function toMermaid(blocks: Block[], conn: Link[]): string {
   return `flowchart TD\n${nodes.join('\n')}\n${edges.join('\n')}`;
 }
 
-export function findFunctionAtLine(code: string, line: number): Module {
+export function findFunctionAtLine(
+  code: string,
+  line: number,
+): [Module, boolean] {
   const funcs: Def[] = [];
   const ast = parse(code);
   walk(ast, {
@@ -164,20 +185,58 @@ export function findFunctionAtLine(code: string, line: number): Module {
   if (funcs.length > 1)
     throw new Error('more than one function at the same line');
   if (funcs.length === 1) {
-    return {
-      type: MODULE,
-      code: funcs[0].code,
-      location: funcs[0].location,
-    };
+    const params = parseFuncHeader(
+      funcs[0].location!.first_line,
+      funcs[0].location!.first_column,
+      funcs[0].params,
+    );
+    if (params) funcs[0].code.unshift(params);
+    return [
+      {
+        type: MODULE,
+        code: funcs[0].code,
+        location: funcs[0].location,
+      },
+      params !== null,
+    ];
   }
-  return ast;
+  return [ast, false];
+}
+
+export function parseFuncHeader(
+  funcLine: number,
+  funcColumn: number,
+  params: Parameter[],
+) {
+  if (params.length === 0) return null;
+  const left = params.map((p) => p.name).join(', ');
+  const right = params.map(() => '0').join(', ');
+  const code = `${left} = ${right}`;
+  const ast = parse(code);
+  fixLocation(ast, funcLine, funcColumn);
+  return ast.code[0];
+}
+
+export function fixLocation(ast: Module, line: number, column: number) {
+  walk(ast, {
+    onEnterNode: (node) => {
+      if (node.location) {
+        node.location.first_line += line - 1;
+        node.location.last_line += line - 1;
+        if (node.type !== MODULE) {
+          node.location.first_column += column + 2;
+          node.location.last_column += column + 2;
+        }
+      }
+    },
+  });
 }
 
 export function getMermaid(code: string, funcLine: number) {
-  const ast = findFunctionAtLine(code, funcLine);
+  const [ast, isFixed] = findFunctionAtLine(code, funcLine);
   const [blocks, conn] = readBlocks(ast);
   const connArray = Array.from(conn.values());
-  return toMermaid(blocks, connArray);
+  return toMermaid(blocks, connArray, isFixed);
 }
 
 export function setupControlFlow() {
