@@ -12,14 +12,14 @@ import {
   CALL,
   Name,
   Dataflow,
+  Def,
+  parse,
+  DEF,
+  MODULE,
+  Parameter,
 } from '@msrvida/python-program-analysis';
 import { ipcMain } from 'electron';
-import {
-  within,
-  isSameLocation,
-  getModuleByLocation,
-  findSeedName,
-} from './common';
+import { within, isSameLocation, findSeedName } from './common';
 import { IpcEvents } from '../../ipc-events';
 import { Variable, VarDep, SliceResult } from '../../interface';
 
@@ -430,8 +430,89 @@ export function toMermaid(vars: Variable[], varDep: VarDep[]) {
   return `flowchart TD\n${nodes.join('\n')}\n${edges.join('\n')}`;
 }
 
+export function findFunctionAtLocation(
+  code: string,
+  location: Location,
+): Module {
+  const funcs: Def[] = [];
+  const tree = parse(code);
+  walk(tree, {
+    onEnterNode: (node) => {
+      if (node.type === DEF && within(location, node.location!)) {
+        funcs.push(node);
+      }
+    },
+  });
+  if (funcs.length === 0) {
+    return tree;
+  }
+  if (funcs.length === 1) {
+    const func = funcs[0];
+    fixFunction(func);
+    return {
+      type: MODULE,
+      code: func.code,
+      location: func.location,
+    };
+  }
+  let index = 0;
+  let firstLine = 0;
+  funcs.forEach((func, i) => {
+    if (func.location!.first_line > firstLine) {
+      index = i;
+      firstLine = func.location!.first_line;
+    }
+  });
+  const func = funcs[index];
+  fixFunction(func);
+  return {
+    type: MODULE,
+    code: func.code,
+    location: func.location,
+  };
+}
+
+export function fixFunction(func: Def) {
+  const params = parseFuncHeader(
+    func.location!.first_line,
+    func.location!.first_column,
+    func.params,
+  );
+  if (params) func.code.unshift(params);
+  return params !== null;
+}
+
+export function parseFuncHeader(
+  funcLine: number,
+  funcColumn: number,
+  params: Parameter[],
+) {
+  if (params.length === 0) return null;
+  const left = params.map((p) => p.name).join(', ');
+  const right = params.map(() => '0').join(', ');
+  const code = `${left} = ${right}`;
+  const ast = parse(code);
+  fixLocation(ast, funcLine, funcColumn);
+  return ast.code[0];
+}
+
+export function fixLocation(ast: Module, line: number, column: number) {
+  walk(ast, {
+    onEnterNode: (node) => {
+      if (node.location) {
+        node.location.first_line += line - 1;
+        node.location.last_line += line - 1;
+        if (node.type !== MODULE) {
+          node.location.first_column += column + 2;
+          node.location.last_column += column + 2;
+        }
+      }
+    },
+  });
+}
+
 export function getSliceResult(code: string, location: Location): SliceResult {
-  const module = getModuleByLocation(code, location);
+  const module = findFunctionAtLocation(code, location);
   const [sliceNodes, dfa, seedNode] = sliceVar(module, location);
 
   const varTable = getVarTable(sliceNodes);

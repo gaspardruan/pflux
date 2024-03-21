@@ -185,22 +185,27 @@ export function findFunctionAtLine(
   if (funcs.length > 1)
     throw new Error('more than one function at the same line');
   if (funcs.length === 1) {
-    const params = parseFuncHeader(
-      funcs[0].location!.first_line,
-      funcs[0].location!.first_column,
-      funcs[0].params,
-    );
-    if (params) funcs[0].code.unshift(params);
+    const isFixed = fixFunction(funcs[0]);
     return [
       {
         type: MODULE,
         code: funcs[0].code,
         location: funcs[0].location,
       },
-      params !== null,
+      isFixed,
     ];
   }
   return [ast, false];
+}
+
+export function fixFunction(func: Def) {
+  const params = parseFuncHeader(
+    func.location!.first_line,
+    func.location!.first_column,
+    func.params,
+  );
+  if (params) func.code.unshift(params);
+  return params !== null;
 }
 
 export function parseFuncHeader(
