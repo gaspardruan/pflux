@@ -57,6 +57,13 @@ export class AppState {
     splitPercentage: 0,
   };
 
+  public inputLayout: MosaicNode<string> = {
+    direction: 'row',
+    first: 'input',
+    second: 'list',
+    splitPercentage: 50,
+  };
+
   // -- Various sesstion-only settings ------
   public genericDialogOptions: GenericDialogOptions = {
     type: GenericDialogType.warning,
@@ -99,6 +106,7 @@ export class AppState {
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
       globalMosaic: observable,
+      inputLayout: observable,
       isGenericDialogShowing: observable,
       isHeaderFocusable: computed,
       isInputShowing: computed,
@@ -110,6 +118,7 @@ export class AppState {
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
       setGloablMosaic: action,
+      setInputLayout: action,
       setTheme: action,
       showConfirmDialog: action,
       showErrorDialog: action,
@@ -128,6 +137,7 @@ export class AppState {
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
     this.setGloablMosaic = this.setGloablMosaic.bind(this);
+    this.setInputLayout = this.setInputLayout.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
     this.setupDefUse = this.setupDefUse.bind(this);
     this.clearDefUse = this.clearDefUse.bind(this);
@@ -213,6 +223,10 @@ export class AppState {
 
   public setGloablMosaic(mosaic: MosaicNode<WrapperEditorId> | null) {
     this.globalMosaic = mosaic!;
+  }
+
+  public setInputLayout(mosaic: MosaicNode<string> | null) {
+    this.inputLayout = mosaic!;
   }
 
   public setGenericDialogLastInput(input: string | null) {

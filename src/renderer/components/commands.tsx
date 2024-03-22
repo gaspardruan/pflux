@@ -169,7 +169,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             active={dcPathExtractActive}
             disabled={!dcPathExtractActive && !defUseActive}
             icon="two-columns"
-            text="Extract-DC-Path"
+            text="Extract DC-Path"
             title="Def-Use must be active firstly"
             onClick={handleDCExtractClick}
           />
@@ -179,10 +179,11 @@ export const Commands = observer(({ appState }: CommandsProps) => {
           <Button
             active={isInputShowing}
             icon="manually-entered-data"
-            text="TestCaseInput"
+            text="TestCase"
             title="Toggle test case input area"
             onClick={handleToggleInputClick}
           />
+          <Button icon="play" text="Run" />
         </ButtonGroup>
       </div>
       {window.ElectronFlux.platform === 'darwin' ? (

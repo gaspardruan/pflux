@@ -1,4 +1,5 @@
 @import '@blueprintjs/core/lib/less/variables.less';
+@import '../variables.less';
 
 #new-file-input {
   box-shadow: 0 0 0 1600px rgba(0, 0, 0, 0.1);
@@ -18,6 +19,7 @@
 .struct-tree-wrapper {
   display: flex;
   flex-direction: column;
+  border-top: @border;
 }
 
 .file-tree .bp5-tree-node-content-1 {
