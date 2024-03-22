@@ -4,6 +4,7 @@ import {
   computed,
   makeObservable,
   observable,
+  reaction,
   when,
 } from 'mobx';
 import * as MonacoType from 'monaco-editor';
@@ -88,6 +89,10 @@ export class AppState {
 
   // Control Flow
 
+  // Input
+  public focusedFuncSignature: string = '';
+  public formInput: Map<string, string> = new Map();
+
   constructor() {
     makeObservable(this, {
       cfgButtonEnabled: computed,
@@ -98,10 +103,12 @@ export class AppState {
       defUseActive: computed,
       editorMosaic: observable,
       fileTreeState: observable,
+      focusedFuncSignature: observable,
       fontFamily: observable,
       fontSize: observable,
       folderPath: observable,
       folderName: observable,
+      formInput: observable,
       genericDialogLastInput: observable,
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
@@ -113,7 +120,9 @@ export class AppState {
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
       setFileTreeState: action,
+      setFocusedFuncSignature: action,
       setFolderPathAndName: action,
+      setFormInputValue: action,
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
@@ -136,11 +145,29 @@ export class AppState {
     // Bind the method to the instance
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
+    this.setFocusedFuncSignature = this.setFocusedFuncSignature.bind(this);
+    this.setFormInputValue = this.setFormInputValue.bind(this);
     this.setGloablMosaic = this.setGloablMosaic.bind(this);
     this.setInputLayout = this.setInputLayout.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
     this.setupDefUse = this.setupDefUse.bind(this);
     this.clearDefUse = this.clearDefUse.bind(this);
+
+    reaction(
+      () => this.focusedFuncSignature,
+      () => {
+        if (!this.focusedFuncSignature.includes('(')) this.setFormInput([]);
+        else {
+          const names = this.focusedFuncSignature
+            .split('(')[1]
+            .split(')')[0]
+            .split(',')
+            .map((name) => name.trim())
+            .filter((name) => name.length > 0);
+          this.setFormInput(names);
+        }
+      },
+    );
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
@@ -239,6 +266,22 @@ export class AppState {
 
   public setGenericDialogShowing(isShowing: boolean) {
     this.isGenericDialogShowing = isShowing;
+  }
+
+  public setFocusedFuncSignature(signature: string) {
+    this.focusedFuncSignature = signature;
+  }
+
+  public setFormInput(kesy: string[]) {
+    const map = new Map<string, string>();
+    kesy.forEach((key) => {
+      map.set(key, '');
+    });
+    this.formInput = map;
+  }
+
+  public setFormInputValue(key: string, value: string) {
+    this.formInput.set(key, value);
   }
 
   public async showGenericDialog(

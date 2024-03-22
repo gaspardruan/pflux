@@ -21,11 +21,12 @@ interface FileTreeProps {
 }
 
 export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
-  const { fileTreeState, editorMosaic } = appState;
+  const { fileTreeState, editorMosaic, setFocusedFuncSignature } = appState;
   const { isEditeds, mainEditor } = editorMosaic;
 
   const handleFileClick = (fileId: EditorId) => {
     editorMosaic.replaceFile(fileId);
+    setFocusedFuncSignature('');
   };
 
   const handleDeleteFile = (fileId: EditorId) => {
@@ -184,7 +185,7 @@ export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
       hasCaret: false,
       icon: 'folder-open',
       isExpanded: true,
-      label: appState.folderName || 'Files',
+      label: <h4>{(appState.folderName || 'Files').toUpperCase()}</h4>,
       secondaryLabel: (
         <ButtonGroup minimal>
           <Tooltip content="Add New File" minimal hoverOpenDelay={1000}>

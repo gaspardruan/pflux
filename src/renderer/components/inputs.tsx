@@ -22,6 +22,7 @@ export const Inputs = observer(({ appState }: InputsProps) => {
 
   return (
     <div
+      className="inputs-wrapper"
       style={{
         display: isInputShowing ? 'inline-block' : 'none',
       }}

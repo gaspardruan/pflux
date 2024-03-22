@@ -18,10 +18,12 @@ interface SidebarParserProps {
 
 interface INodeData {
   range: IRange;
+  text: string;
+  type: NodeType;
 }
 
 export const SidebarParser = observer(({ appState }: SidebarParserProps) => {
-  const { editorMosaic } = appState;
+  const { editorMosaic, setFocusedFuncSignature } = appState;
   const { structTree, setStructExpand } = editorMosaic;
   const { structExpandRecord, editor } = editorMosaic.mainEditor;
 
@@ -91,9 +93,11 @@ export const SidebarParser = observer(({ appState }: SidebarParserProps) => {
 
   const handleNodeClick = (node: TreeNodeInfo) => {
     // 将range的第一行显示在屏幕中间, 并高亮这一行
-    const { range } = node.nodeData as INodeData;
+    const { range, text, type } = node.nodeData as INodeData;
     editor!.revealLineInCenter(range.startLineNumber);
     editor!.setPosition({ lineNumber: range.startLineNumber, column: 1 });
+
+    if (type === 'function') setFocusedFuncSignature(text);
   };
 
   // Transfer Array<StructNodeInfo> to TreeNodeInfo[]
@@ -106,7 +110,7 @@ export const SidebarParser = observer(({ appState }: SidebarParserProps) => {
         isExpanded: isExpanded(`${node.type}-${node.text}`),
         icon: icon(node.type),
         childNodes: trans(node.code),
-        nodeData: { range: node.range },
+        nodeData: { range: node.range, text: node.text, type: node.type },
       };
     });
   };

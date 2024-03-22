@@ -19,6 +19,10 @@
     margin-top: 0;
   }
 
+  .mosaic-split.-row ~ .mosaic-tile {
+    margin-right: 0;
+  }
+
   .mosaic-tile:has(+ .mosaic-split.-row) {
     margin-bottom: 0;
   }
@@ -81,11 +85,12 @@
 }
 
 .use-line-left-mark {
-  left: 2px;
+  margin-left: 2px;
   background-color: @blue3;
 }
 
 .def-use-line-left-mark {
+  margin-left: 2px;
   background-image: linear-gradient(
     to right,
     @green3,
