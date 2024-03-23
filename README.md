@@ -6,6 +6,15 @@ and then analyze the coverage standard(how many dc-path the test case covers) ac
 
 In addition, the ui design draws inspiration from [Electron Fiddle](https://github.com/electron/fiddle).
 
+## Get Started
+
+After cloning the repo,
+```bash
+cd pflux
+npm install
+npm start
+```
+
 ## Features
 
 ### Control Flow Graph
