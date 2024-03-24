@@ -17,16 +17,24 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     sliceExtractActive,
     varDepActive,
     cfgButtonEnabled,
+    controlFlowActive,
+    testCaseButtonEnabled,
     dcPathExtractActive,
-    isInputShowing,
+    isTestCaseActive,
     parseSlice,
     clearSlice,
     setupDefUse,
     clearDefUse,
     setupControlFlow,
   } = appState;
-  const { cursorPosition, cursorWord, show, hide, disposeSliceEditor } =
-    appState.editorMosaic;
+  const {
+    cursorPosition,
+    cursorWord,
+    show,
+    hide,
+    disposeSliceEditor,
+    updateFocusedFuncSignature,
+  } = appState.editorMosaic;
   const { id } = appState.editorMosaic.mainEditor;
 
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -64,6 +72,10 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     setupControlFlow();
   };
 
+  const handleCloseCFGClick = () => {
+    hide(getGridId(WinType.CFG, id!));
+  };
+
   const handleVarDepClick = () => {
     if (varDepActive) {
       hide(getGridId(WinType.VARDEP, id!));
@@ -80,14 +92,13 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     }
   };
 
-  const handleToggleInputClick = () => {
-    if (isInputShowing) {
-      // hide(getGridId(WinType.INPUT, id!));
-      console.log('hide input');
-    } else {
-      // show(getGridId(WinType.INPUT, id!));
-      console.log('show input');
-    }
+  const handleTestCaseClick = () => {
+    updateFocusedFuncSignature();
+    show(getGridId(WinType.TESTCASE, id!));
+  };
+
+  const handleCloseTestCaseClick = () => {
+    hide(getGridId(WinType.TESTCASE, id!));
   };
 
   return (
@@ -115,6 +126,13 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             text="Control Flow"
             title="Please place the cursor on a function def line"
             onClick={handleCFGClick}
+          />
+          <Button
+            disabled={!controlFlowActive}
+            icon="drawer-right"
+            text="Close"
+            title="Click to close CFG window"
+            onClick={handleCloseCFGClick}
           />
         </ButtonGroup>
 
@@ -164,7 +182,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
           <Button
             active={dcPathExtractActive}
             disabled={!dcPathExtractActive && !defUseActive}
-            icon="two-columns"
+            icon="drawer-left"
             text="Extract DC-Path"
             title="Def-Use must be active firstly"
             onClick={handleDCExtractClick}
@@ -173,13 +191,20 @@ export const Commands = observer(({ appState }: CommandsProps) => {
 
         <ButtonGroup fill>
           <Button
-            active={isInputShowing}
+            disabled={!testCaseButtonEnabled}
             icon="manually-entered-data"
             text="TestCase"
-            title="Toggle test case input area"
-            onClick={handleToggleInputClick}
+            title="Please place the cursor on the def line of a function with params"
+            onClick={handleTestCaseClick}
           />
-          <Button icon="play" text="Run" />
+          <Button
+            disabled={!isTestCaseActive}
+            icon="drawer-right"
+            text="Close"
+            title="Click to close TestCase window"
+            onClick={handleCloseTestCaseClick}
+          />
+          <Button disabled={!isTestCaseActive} icon="play" text="Run" />
         </ButtonGroup>
       </div>
       {window.ElectronFlux.platform === 'darwin' ? (

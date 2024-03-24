@@ -22,11 +22,10 @@ interface FileTreeProps {
 
 export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
   const { fileTreeState, editorMosaic } = appState;
-  const { isEditeds, mainEditor, setFocusedFuncSignature } = editorMosaic;
+  const { isEditeds, mainEditor } = editorMosaic;
 
   const handleFileClick = (fileId: EditorId) => {
     editorMosaic.replaceFile(fileId);
-    setFocusedFuncSignature('');
   };
 
   const handleDeleteFile = (fileId: EditorId) => {
@@ -141,7 +140,7 @@ export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
           </ContextMenu>
         ),
         secondaryLabel: unsavedIcon ? (
-          <Tooltip content="Unsaved changes" minimal hoverOpenDelay={1000}>
+          <Tooltip content="Unsaved changes" minimal hoverOpenDelay={600}>
             <Icon icon={unsavedIcon} />
           </Tooltip>
         ) : null,

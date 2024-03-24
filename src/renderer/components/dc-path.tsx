@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { NonIdealState, Tag } from '@blueprintjs/core';
+import { NonIdealState } from '@blueprintjs/core';
 import { Table2, Column, Cell, SelectionModes } from '@blueprintjs/table';
 import { AppState } from '../state';
 import { UseType } from '../../interface';
@@ -26,14 +26,13 @@ export const DCPath = observer(({ appState }: IDefUseProps) => {
 
   return dcPaths.length !== 0 ? (
     <div className="table-wrapper">
-      <h4>
-        <Tag minimal>{varName}</Tag>&#39;s dc-paths
-      </h4>
+      <h3>Variable: {varName}</h3>
       <Table2
         columnWidths={[100, 100, 100]}
-        enableRowResizing
         numRows={dcPaths.length}
-        selectionModes={SelectionModes.NONE}
+        enableRowResizing={false}
+        enableColumnResizing={false}
+        selectionModes={SelectionModes.ROWS_ONLY}
       >
         <Column name="StartLine" cellRenderer={renderStartLine} />
         <Column name="EndLine" cellRenderer={renderEndLine} />

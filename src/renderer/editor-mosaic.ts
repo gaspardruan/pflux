@@ -9,6 +9,7 @@ import {
   GridId,
   SliceId,
   StructNodeInfo,
+  TestCaseCollection,
 } from '../interface';
 import { getEmptyContent, sortGrid } from '../utils/editor-utils';
 
@@ -23,6 +24,7 @@ interface EditorBackup {
   structExpandRecord: Map<string, boolean>;
   lineCollection: Array<number>;
   defUseCollection: DefUseCollection;
+  testCaseCollection: TestCaseCollection;
   cfgMermaid: string;
   varDepGraph: string;
 }
@@ -38,6 +40,7 @@ export class EditorMosaic {
     structExpandRecord: Map<string, boolean> | null;
     lineCollection: Array<number> | null;
     defUseCollection: DefUseCollection | null;
+    testCaseCollection: TestCaseCollection | null;
     cfgMermaid: string | null;
     varDepGraph: string | null;
   } = {
@@ -49,6 +52,7 @@ export class EditorMosaic {
     structExpandRecord: null,
     lineCollection: null,
     defUseCollection: null,
+    testCaseCollection: null,
     cfgMermaid: null,
     varDepGraph: null,
   };
@@ -110,9 +114,6 @@ export class EditorMosaic {
   public cfgPanZoom: SvgPanZoom.Instance | null = null;
   public varPanZoom: SvgPanZoom.Instance | null = null;
 
-  // Input
-  public focusedFuncSignature: string = '';
-
   constructor() {
     makeObservable(this, {
       addFile: action,
@@ -122,7 +123,6 @@ export class EditorMosaic {
       cursorWord: observable,
       disposeSliceEditor: action,
       fileContent2: observable,
-      focusedFuncSignature: observable,
       focusedGridId: observable,
       hide: action,
       isEditeds: computed,
@@ -150,12 +150,14 @@ export class EditorMosaic {
       show: action,
       structTree: observable,
       updateMosaic: action,
+      updateFocusedFuncSignature: action,
     });
 
     this.disposeSliceEditor = this.disposeSliceEditor.bind(this);
     this.hide = this.hide.bind(this);
     this.replaceSliceEditorModel = this.replaceSliceEditorModel.bind(this);
-    this.setFocusedFuncSignature = this.setFocusedFuncSignature.bind(this);
+    this.updateFocusedFuncSignature =
+      this.updateFocusedFuncSignature.bind(this);
     this.setStructExpand = this.setStructExpand.bind(this);
     this.show = this.show.bind(this);
     this.setVisible = this.setVisible.bind(this);
@@ -195,6 +197,9 @@ export class EditorMosaic {
 
   public setIsEdited(val: boolean) {
     this.mainEditor.isEdited = val;
+    if (!val) {
+      this.observeEdit();
+    }
   }
 
   public onAllSaved() {
@@ -249,8 +254,16 @@ export class EditorMosaic {
     this.mainEditor.cfgMermaid = mermaid;
   }
 
-  public setFocusedFuncSignature(signature: string) {
-    this.focusedFuncSignature = signature;
+  public updateFocusedFuncSignature() {
+    if (this.cursorPosition) {
+      const content = this.mainEditor
+        .editor!.getModel()!
+        .getLineContent(this.cursorPosition.lineNumber);
+      // eslint-disable-next-line prefer-destructuring
+      this.mainEditor.testCaseCollection!.focusedFuncSignature = content
+        .trim()
+        .slice(4, -1);
+    }
   }
 
   public resetLayout() {
@@ -279,6 +292,7 @@ export class EditorMosaic {
       this.mainEditor.structExpandRecord = backup.structExpandRecord;
       this.mainEditor.lineCollection = backup.lineCollection;
       this.mainEditor.defUseCollection = backup.defUseCollection;
+      this.mainEditor.testCaseCollection = backup.testCaseCollection;
       this.mainEditor.varDepGraph = backup.cfgMermaid;
       this.mainEditor.cfgMermaid = backup.cfgMermaid;
     }
@@ -311,6 +325,7 @@ export class EditorMosaic {
         structExpandRecord: this.mainEditor.structExpandRecord!,
         lineCollection: this.mainEditor.lineCollection!,
         defUseCollection: this.mainEditor.defUseCollection!,
+        testCaseCollection: this.mainEditor.testCaseCollection!,
         cfgMermaid: this.mainEditor.cfgMermaid!,
         varDepGraph: this.mainEditor.varDepGraph!,
       };
@@ -357,6 +372,7 @@ export class EditorMosaic {
         structExpandRecord: this.mainEditor.structExpandRecord!,
         lineCollection: this.mainEditor.lineCollection!,
         defUseCollection: this.mainEditor.defUseCollection!,
+        testCaseCollection: this.mainEditor.testCaseCollection!,
         cfgMermaid: this.mainEditor.cfgMermaid!,
         varDepGraph: this.mainEditor.varDepGraph!,
       });
@@ -390,6 +406,7 @@ export class EditorMosaic {
     this.mainEditor.structExpandRecord = backup.structExpandRecord;
     this.mainEditor.lineCollection = backup.lineCollection;
     this.mainEditor.defUseCollection = backup.defUseCollection;
+    this.mainEditor.testCaseCollection = backup.testCaseCollection;
     if (this.mainEditor.lineCollection.length > 0) {
       const decorations = this.mainEditor.lineCollection.map((line) => {
         return {
@@ -574,6 +591,10 @@ export class EditorMosaic {
         useLines: [],
         defUseLines: [],
         dcPaths: [],
+      },
+      testCaseCollection: {
+        focusedFuncSignature: '',
+        testCases: new Map(),
       },
       cfgMermaid: '',
       varDepGraph: '',

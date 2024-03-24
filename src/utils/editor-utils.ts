@@ -28,6 +28,11 @@ export function sortGrid(grids: GridId[]) {
     }
   }
   for (const grid of grids) {
+    if (grid.endsWith('__TestCase')) {
+      result.push(grid);
+    }
+  }
+  for (const grid of grids) {
     if (grid.endsWith('__Analysis')) {
       result.push(grid);
     }
@@ -62,6 +67,10 @@ export function getEditorTitle(id: GridId): string {
   if (id.endsWith('__VarDep')) {
     const name = id.split('__')[0];
     return `VarDep (${name})`;
+  }
+  if (id.endsWith('__TestCase')) {
+    const name = id.split('__')[0];
+    return `TestCase (${name})`;
   }
   return id;
 }

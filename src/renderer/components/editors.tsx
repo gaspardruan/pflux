@@ -28,6 +28,7 @@ import { ControlFlow } from './control-flow';
 import { VarDep } from './var-dep';
 import { MarkTag } from './mark-tag';
 import { DCPath } from './dc-path';
+import { TestCase } from './test-case';
 
 const defaultMonacoOptions: MonacoType.editor.IEditorOptions = {
   minimap: {
@@ -258,6 +259,10 @@ export const Editors = observer(({ appState }: EditorsProps) => {
     return <DCPath appState={appState} />;
   };
 
+  const renderTestCase = (): React.JSX.Element | null => {
+    return <TestCase appState={appState} />;
+  };
+
   /**
    * Renders a Mosaic tile
    *
@@ -334,6 +339,21 @@ export const Editors = observer(({ appState }: EditorsProps) => {
     if (_id.endsWith('__Flow')) {
       const id = _id as FlowId;
       const content = renderDCPath();
+      return (
+        <MosaicWindow<GridId>
+          path={path}
+          title={title}
+          renderToolbar={(props: MosaicWindowProps<GridId>) =>
+            renderToolbar(props, id)
+          }
+        >
+          {content}
+        </MosaicWindow>
+      );
+    }
+    if (_id.endsWith('__TestCase')) {
+      const id = _id as FlowId;
+      const content = renderTestCase();
       return (
         <MosaicWindow<GridId>
           path={path}

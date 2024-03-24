@@ -37,6 +37,7 @@ export enum WinType {
   SLICE = 'Slice',
   CFG = 'CFG',
   VARDEP = 'VarDep',
+  TESTCASE = 'TestCase',
 }
 
 export type EditorId = `${string}.${'py'}`;
@@ -45,12 +46,14 @@ export type CFGId = `${string}.${'py'}__CFG`;
 export type VarDepId = `${string}.${'py'}__VarDep`;
 export type FlowId = `${string}.${'py'}__Flow`;
 export type AnalysisId = `${string}.${'py'}__Analysis`;
+export type TestCaseId = `${string}.${'py'}__TestCase`;
 export type GridId =
   | EditorId
   | SliceId
   | FlowId
   | AnalysisId
   | CFGId
+  | TestCaseId
   | VarDepId;
 
 export type EditorValues = Record<EditorId, string>;
@@ -121,4 +124,9 @@ export interface DCPath {
   startLine: number;
   endLine: number;
   useType: UseType;
+}
+
+export interface TestCaseCollection {
+  focusedFuncSignature: string;
+  testCases: Map<string, Map<string, string>>;
 }

@@ -86,7 +86,7 @@ export class AppState {
       genericDialogOptions: observable,
       isGenericDialogShowing: observable,
       isHeaderFocusable: computed,
-      isInputShowing: computed,
+      isTestCaseActive: computed,
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
       setFileTreeState: action,
@@ -102,6 +102,7 @@ export class AppState {
       showInputDialog: action,
       sliceActive: computed,
       sliceExtractActive: computed,
+      testCaseButtonEnabled: computed,
       theme: observable,
       title: computed,
       toggleSystemTheme: action,
@@ -170,6 +171,24 @@ export class AppState {
     return false;
   }
 
+  get testCaseButtonEnabled() {
+    const em = this.editorMosaic;
+    if (em.cursorPosition) {
+      const line = em.cursorPosition.lineNumber;
+      const content = em.mainEditor.editor!.getModel()!.getLineContent(line);
+      const signature = content.trim();
+      return (
+        signature.startsWith('def') &&
+        signature
+          .split('(')[1]
+          .split(')')[0]
+          .split(',')
+          .filter((v) => v.trim().length > 0).length > 0
+      );
+    }
+    return false;
+  }
+
   get defUseActive() {
     return this.editorMosaic.mainEditor.defUseCollection!.lines.length > 0;
   }
@@ -179,8 +198,11 @@ export class AppState {
     return getLeaves(mosaic).some((v) => v === getGridId(WinType.FLOW, id!));
   }
 
-  get isInputShowing() {
-    return true;
+  get isTestCaseActive() {
+    const { mosaic, id } = this.editorMosaic.mainEditor;
+    return getLeaves(mosaic).some(
+      (v) => v === getGridId(WinType.TESTCASE, id!),
+    );
   }
 
   public setTheme(fileName?: string) {
