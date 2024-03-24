@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { Mosaic, MosaicNode } from 'react-mosaic-component';
+import { Mosaic } from 'react-mosaic-component';
 
 import { Editors } from './editors';
 import { Sidebar } from './sidebar';
@@ -17,20 +17,18 @@ export const SidebarEditorsWrapper = observer(({ appState }: WrapperProps) => {
     editors: <Editors appState={appState} />,
   };
 
-  const { globalMosaic, setGloablMosaic } = appState;
-
-  const onChange = (rootNode: MosaicNode<WrapperEditorId> | null) => {
-    setGloablMosaic(rootNode);
-  };
-
   return (
     <Mosaic<WrapperEditorId>
       renderTile={(id: string) =>
         MOSAIC_ELEMENTS[id as keyof typeof MOSAIC_ELEMENTS]
       }
       resize={{ minimumPaneSizePercentage: 15 }}
-      value={globalMosaic}
-      onChange={onChange}
+      initialValue={{
+        direction: 'row',
+        first: 'sidebar',
+        second: 'editors',
+        splitPercentage: 25,
+      }}
     />
   );
 });

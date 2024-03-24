@@ -7,7 +7,7 @@ import {
   when,
 } from 'mobx';
 import * as MonacoType from 'monaco-editor';
-import { MosaicNode, getLeaves } from 'react-mosaic-component';
+import { getLeaves } from 'react-mosaic-component';
 import { EditorMosaic } from './editor-mosaic';
 import {
   GenericDialogOptions,
@@ -15,7 +15,6 @@ import {
   GlobalSetting,
   SliceResult,
   WinType,
-  WrapperEditorId,
 } from '../interface';
 import { getGridId } from '../utils/editor-utils';
 
@@ -43,14 +42,6 @@ export class AppState {
   public folderName: string | null = localStorage.getItem(
     GlobalSetting.folderName,
   );
-
-  // global layout
-  public globalMosaic: MosaicNode<WrapperEditorId> = {
-    direction: 'row',
-    first: 'sidebar',
-    second: 'editors',
-    splitPercentage: 25,
-  };
 
   // -- Various sesstion-only settings ------
   public genericDialogOptions: GenericDialogOptions = {
@@ -93,7 +84,6 @@ export class AppState {
       genericDialogLastInput: observable,
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
-      globalMosaic: observable,
       isGenericDialogShowing: observable,
       isHeaderFocusable: computed,
       isInputShowing: computed,
@@ -104,7 +94,6 @@ export class AppState {
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
-      setGloablMosaic: action,
       setTheme: action,
       showConfirmDialog: action,
       showErrorDialog: action,
@@ -122,7 +111,6 @@ export class AppState {
     // Bind the method to the instance
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
-    this.setGloablMosaic = this.setGloablMosaic.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
     this.setupDefUse = this.setupDefUse.bind(this);
     this.clearDefUse = this.clearDefUse.bind(this);
@@ -202,10 +190,6 @@ export class AppState {
 
   public toggleSystemTheme() {
     this.isUsingSystemTheme = !this.isUsingSystemTheme;
-  }
-
-  public setGloablMosaic(mosaic: MosaicNode<WrapperEditorId> | null) {
-    this.globalMosaic = mosaic!;
   }
 
   public setGenericDialogLastInput(input: string | null) {
