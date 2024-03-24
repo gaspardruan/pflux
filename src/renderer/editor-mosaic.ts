@@ -110,6 +110,9 @@ export class EditorMosaic {
   public cfgPanZoom: SvgPanZoom.Instance | null = null;
   public varPanZoom: SvgPanZoom.Instance | null = null;
 
+  // Input
+  public focusedFuncSignature: string = '';
+
   constructor() {
     makeObservable(this, {
       addFile: action,
@@ -119,6 +122,7 @@ export class EditorMosaic {
       cursorWord: observable,
       disposeSliceEditor: action,
       fileContent2: observable,
+      focusedFuncSignature: observable,
       focusedGridId: observable,
       hide: action,
       isEditeds: computed,
@@ -151,6 +155,7 @@ export class EditorMosaic {
     this.disposeSliceEditor = this.disposeSliceEditor.bind(this);
     this.hide = this.hide.bind(this);
     this.replaceSliceEditorModel = this.replaceSliceEditorModel.bind(this);
+    this.setFocusedFuncSignature = this.setFocusedFuncSignature.bind(this);
     this.setStructExpand = this.setStructExpand.bind(this);
     this.show = this.show.bind(this);
     this.setVisible = this.setVisible.bind(this);
@@ -242,6 +247,10 @@ export class EditorMosaic {
 
   public setCFGMermaid(mermaid: string) {
     this.mainEditor.cfgMermaid = mermaid;
+  }
+
+  public setFocusedFuncSignature(signature: string) {
+    this.focusedFuncSignature = signature;
   }
 
   public resetLayout() {

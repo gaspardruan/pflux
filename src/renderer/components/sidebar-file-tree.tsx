@@ -21,8 +21,8 @@ interface FileTreeProps {
 }
 
 export const SidebarFileTree = observer(({ appState }: FileTreeProps) => {
-  const { fileTreeState, editorMosaic, setFocusedFuncSignature } = appState;
-  const { isEditeds, mainEditor } = editorMosaic;
+  const { fileTreeState, editorMosaic } = appState;
+  const { isEditeds, mainEditor, setFocusedFuncSignature } = editorMosaic;
 
   const handleFileClick = (fileId: EditorId) => {
     editorMosaic.replaceFile(fileId);

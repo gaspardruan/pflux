@@ -1,11 +1,9 @@
 import { Button, ButtonGroup } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
-import { toJS } from 'mobx';
-import { MosaicNode, MosaicParent } from 'react-mosaic-component';
 
 import { AppState } from '../state';
 import { getGridId } from '../../utils/editor-utils';
-import { WinType, WrapperEditorId } from '../../interface';
+import { WinType } from '../../interface';
 
 interface CommandsProps {
   appState: AppState;
@@ -21,8 +19,6 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     cfgButtonEnabled,
     dcPathExtractActive,
     isInputShowing,
-    globalMosaic,
-    setGloablMosaic,
     parseSlice,
     clearSlice,
     setupDefUse,
@@ -85,13 +81,13 @@ export const Commands = observer(({ appState }: CommandsProps) => {
   };
 
   const handleToggleInputClick = () => {
-    const mosaicTree: MosaicNode<WrapperEditorId> = toJS(globalMosaic);
     if (isInputShowing) {
-      (mosaicTree as MosaicParent<WrapperEditorId>).splitPercentage = 0;
+      // hide(getGridId(WinType.INPUT, id!));
+      console.log('hide input');
     } else {
-      (mosaicTree as MosaicParent<WrapperEditorId>).splitPercentage = 25;
+      // show(getGridId(WinType.INPUT, id!));
+      console.log('show input');
     }
-    setGloablMosaic(mosaicTree);
   };
 
   return (

@@ -4,11 +4,10 @@ import {
   computed,
   makeObservable,
   observable,
-  reaction,
   when,
 } from 'mobx';
 import * as MonacoType from 'monaco-editor';
-import { MosaicNode, MosaicParent, getLeaves } from 'react-mosaic-component';
+import { MosaicNode, getLeaves } from 'react-mosaic-component';
 import { EditorMosaic } from './editor-mosaic';
 import {
   GenericDialogOptions,
@@ -47,22 +46,10 @@ export class AppState {
 
   // global layout
   public globalMosaic: MosaicNode<WrapperEditorId> = {
-    direction: 'column',
-    first: 'input',
-    second: {
-      direction: 'row',
-      first: 'sidebar',
-      second: 'editors',
-      splitPercentage: 25,
-    },
-    splitPercentage: 0,
-  };
-
-  public inputLayout: MosaicNode<string> = {
     direction: 'row',
-    first: 'input',
-    second: 'list',
-    splitPercentage: 50,
+    first: 'sidebar',
+    second: 'editors',
+    splitPercentage: 25,
   };
 
   // -- Various sesstion-only settings ------
@@ -89,10 +76,6 @@ export class AppState {
 
   // Control Flow
 
-  // Input
-  public focusedFuncSignature: string = '';
-  public formInput: Map<string, string> = new Map();
-
   constructor() {
     makeObservable(this, {
       cfgButtonEnabled: computed,
@@ -103,31 +86,25 @@ export class AppState {
       defUseActive: computed,
       editorMosaic: observable,
       fileTreeState: observable,
-      focusedFuncSignature: observable,
       fontFamily: observable,
       fontSize: observable,
       folderPath: observable,
       folderName: observable,
-      formInput: observable,
       genericDialogLastInput: observable,
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
       globalMosaic: observable,
-      inputLayout: observable,
       isGenericDialogShowing: observable,
       isHeaderFocusable: computed,
       isInputShowing: computed,
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
       setFileTreeState: action,
-      setFocusedFuncSignature: action,
       setFolderPathAndName: action,
-      setFormInputValue: action,
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
       setGloablMosaic: action,
-      setInputLayout: action,
       setTheme: action,
       showConfirmDialog: action,
       showErrorDialog: action,
@@ -145,29 +122,10 @@ export class AppState {
     // Bind the method to the instance
     this.parseSlice = this.parseSlice.bind(this);
     this.clearSlice = this.clearSlice.bind(this);
-    this.setFocusedFuncSignature = this.setFocusedFuncSignature.bind(this);
-    this.setFormInputValue = this.setFormInputValue.bind(this);
     this.setGloablMosaic = this.setGloablMosaic.bind(this);
-    this.setInputLayout = this.setInputLayout.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
     this.setupDefUse = this.setupDefUse.bind(this);
     this.clearDefUse = this.clearDefUse.bind(this);
-
-    reaction(
-      () => this.focusedFuncSignature,
-      () => {
-        if (!this.focusedFuncSignature.includes('(')) this.setFormInput([]);
-        else {
-          const names = this.focusedFuncSignature
-            .split('(')[1]
-            .split(')')[0]
-            .split(',')
-            .map((name) => name.trim())
-            .filter((name) => name.length > 0);
-          this.setFormInput(names);
-        }
-      },
-    );
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
@@ -234,9 +192,7 @@ export class AppState {
   }
 
   get isInputShowing() {
-    return (
-      (this.globalMosaic as MosaicParent<WrapperEditorId>).splitPercentage !== 0
-    );
+    return true;
   }
 
   public setTheme(fileName?: string) {
@@ -252,10 +208,6 @@ export class AppState {
     this.globalMosaic = mosaic!;
   }
 
-  public setInputLayout(mosaic: MosaicNode<string> | null) {
-    this.inputLayout = mosaic!;
-  }
-
   public setGenericDialogLastInput(input: string | null) {
     this.genericDialogLastInput = input;
   }
@@ -266,22 +218,6 @@ export class AppState {
 
   public setGenericDialogShowing(isShowing: boolean) {
     this.isGenericDialogShowing = isShowing;
-  }
-
-  public setFocusedFuncSignature(signature: string) {
-    this.focusedFuncSignature = signature;
-  }
-
-  public setFormInput(kesy: string[]) {
-    const map = new Map<string, string>();
-    kesy.forEach((key) => {
-      map.set(key, '');
-    });
-    this.formInput = map;
-  }
-
-  public setFormInputValue(key: string, value: string) {
-    this.formInput.set(key, value);
   }
 
   public async showGenericDialog(

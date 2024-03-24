@@ -23,8 +23,8 @@ interface INodeData {
 }
 
 export const SidebarParser = observer(({ appState }: SidebarParserProps) => {
-  const { editorMosaic, setFocusedFuncSignature } = appState;
-  const { structTree, setStructExpand } = editorMosaic;
+  const { editorMosaic } = appState;
+  const { structTree, setStructExpand, setFocusedFuncSignature } = editorMosaic;
   const { structExpandRecord, editor } = editorMosaic.mainEditor;
 
   const icon = (type: NodeType) => {
