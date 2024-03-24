@@ -84,7 +84,7 @@ export function parseFuncHeader(
   const right = params.map(() => '0').join(', ');
   const code = `${left} = ${right}`;
   const ast = parse(code);
-  console.log(JSON.stringify(ast, null, 2));
+  // console.log(JSON.stringify(ast, null, 2));
   fixLocation(ast, funcLine, funcColumn);
   return ast.code[0] as Assignment;
 }

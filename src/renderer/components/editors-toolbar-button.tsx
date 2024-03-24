@@ -63,7 +63,10 @@ export class RemoveButton extends ToolbarButton {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   public createButton(_mosaicActions: MosaicRootActions<any>) {
-    const onClick = () => this.props.appState.editorMosaic.hide(this.props.id);
+    const onClick = () => {
+      if (!this.props.id.endsWith('.py'))
+        this.props.appState.editorMosaic.hide(this.props.id);
+    };
 
     return <Button icon="cross" small onClick={onClick} />;
   }
