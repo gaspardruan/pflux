@@ -87,11 +87,14 @@ export class EditorMosaic {
   }
 
   public get testCaseReady(): boolean {
+    const { focusedFuncSignature } = this.mainEditor.testCaseCollection!;
+    if (focusedFuncSignature === '') return false;
+
     const testCase = this.getTestCase();
     let ready = false;
-    if (testCase.length > 0) {
-      console.log(testCase);
+    if (testCase && testCase.length > 0) {
       ready = !testCase.some((row) => Array.from(row.values()).includes(''));
+      console.log(ready);
     }
     return ready;
   }
@@ -158,6 +161,7 @@ export class EditorMosaic {
       setSliceEditor: action,
       setStructTree: action,
       setStructExpand: action,
+      setTestCaseValue: action,
       setVarDepGraph: action,
       setVisible: action,
       show: action,
@@ -175,6 +179,8 @@ export class EditorMosaic {
     this.updateFocusedFuncSignature =
       this.updateFocusedFuncSignature.bind(this);
     this.setStructExpand = this.setStructExpand.bind(this);
+    this.setTestCaseValue = this.setTestCaseValue.bind(this);
+    this.setLineCollection = this.setLineCollection.bind(this);
     this.show = this.show.bind(this);
     this.setVisible = this.setVisible.bind(this);
     this.setPanZoom = this.setPanZoom.bind(this);
@@ -284,18 +290,23 @@ export class EditorMosaic {
 
   public addNewTestCase(row: Map<string, string>) {
     const testCase = this.getTestCase();
-    testCase.push(row);
+    testCase!.push(row);
+  }
+
+  public setTestCaseValue(rowIndex: number, key: string, value: string) {
+    const testCase = this.getTestCase()!;
+    testCase[rowIndex].set(key, value);
   }
 
   public deleteTestCase(rowIndex: number) {
     const testCase = this.getTestCase();
-    testCase.splice(rowIndex, 1);
+    testCase!.splice(rowIndex, 1);
   }
 
   public getTestCase = () => {
     const { focusedFuncSignature, testCases } =
       this.mainEditor.testCaseCollection!;
-    if (focusedFuncSignature === '') throw new Error('No focused function');
+    if (focusedFuncSignature === '') return null;
     if (testCases.has(focusedFuncSignature)) {
       return testCases.get(focusedFuncSignature)!;
     }

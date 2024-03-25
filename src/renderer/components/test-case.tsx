@@ -17,8 +17,13 @@ export const TestCase = observer(({ appState }: ITestCaseProps) => {
   const { focusedFuncSignature } =
     appState.editorMosaic.mainEditor.testCaseCollection!;
 
-  const { testCaseReady, getTestCase, addNewTestCase, deleteTestCase } =
-    appState.editorMosaic;
+  const {
+    testCaseReady,
+    getTestCase,
+    addNewTestCase,
+    deleteTestCase,
+    setTestCaseValue,
+  } = appState.editorMosaic;
 
   const parseParams = () => {
     return focusedFuncSignature
@@ -29,7 +34,7 @@ export const TestCase = observer(({ appState }: ITestCaseProps) => {
       .filter((param) => param !== '');
   };
 
-  const testCase = getTestCase();
+  const testCase = getTestCase()!;
 
   const columnNames = parseParams();
 
@@ -41,8 +46,7 @@ export const TestCase = observer(({ appState }: ITestCaseProps) => {
 
   const cellSetter = (rowIndex: number, columnIndex: number) => {
     return (value: string) => {
-      const row = testCase[rowIndex];
-      row.set(columnNames[columnIndex], value);
+      setTestCaseValue(rowIndex, columnNames[columnIndex], value);
     };
   };
 

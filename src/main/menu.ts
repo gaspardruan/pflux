@@ -240,6 +240,16 @@ export default function setupMenu() {
       );
     }
 
+    if (label === 'Window' && isSubmenu(item.submenu)) {
+      item.submenu.push(
+        { type: 'separator' },
+        {
+          label: 'Reload',
+          role: 'reload',
+        },
+      );
+    }
+
     // Append items to "Help"
     if (label === 'Help' && isSubmenu(item.submenu)) {
       item.submenu = getHelpItems();
