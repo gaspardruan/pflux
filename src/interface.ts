@@ -128,5 +128,5 @@ export interface DCPath {
 
 export interface TestCaseCollection {
   focusedFuncSignature: string;
-  testCases: Map<string, Map<string, string>>;
+  testCases: Map<string, Map<string, string>[]>;
 }

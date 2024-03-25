@@ -25,19 +25,21 @@ export const DCPath = observer(({ appState }: IDefUseProps) => {
   );
 
   return dcPaths.length !== 0 ? (
-    <div className="table-wrapper">
+    <div className="table-wrapper flux-scrollbar">
       <h3>Variable: {varName}</h3>
-      <Table2
-        columnWidths={[100, 100, 100]}
-        numRows={dcPaths.length}
-        enableRowResizing={false}
-        enableColumnResizing={false}
-        selectionModes={SelectionModes.ROWS_ONLY}
-      >
-        <Column name="StartLine" cellRenderer={renderStartLine} />
-        <Column name="EndLine" cellRenderer={renderEndLine} />
-        <Column name="UseType" cellRenderer={renderUseType} />
-      </Table2>
+      <div className="table-div">
+        <Table2
+          columnWidths={[100, 100, 100]}
+          numRows={dcPaths.length}
+          enableRowResizing={false}
+          enableColumnResizing={false}
+          selectionModes={SelectionModes.ROWS_ONLY}
+        >
+          <Column name="StartLine" cellRenderer={renderStartLine} />
+          <Column name="EndLine" cellRenderer={renderEndLine} />
+          <Column name="UseType" cellRenderer={renderUseType} />
+        </Table2>
+      </div>
     </div>
   ) : (
     <NonIdealState icon="applications" description="No DC-Path is extracted" />

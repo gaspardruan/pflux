@@ -332,6 +332,7 @@ export class EditorMosaic {
     this.mainEditor.cfgMermaid = backup.cfgMermaid;
     this.mainEditor.varDepGraph = backup.varDepGraph;
     this.mainEditor.sliceEditor = null;
+    this.mainEditor.testCaseCollection = backup.testCaseCollection;
     this.mainEditor.mosaic = backup.mosaic;
   }
 
@@ -406,7 +407,6 @@ export class EditorMosaic {
     this.mainEditor.structExpandRecord = backup.structExpandRecord;
     this.mainEditor.lineCollection = backup.lineCollection;
     this.mainEditor.defUseCollection = backup.defUseCollection;
-    this.mainEditor.testCaseCollection = backup.testCaseCollection;
     if (this.mainEditor.lineCollection.length > 0) {
       const decorations = this.mainEditor.lineCollection.map((line) => {
         return {

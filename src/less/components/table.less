@@ -1,0 +1,59 @@
+@import '../variables.less';
+
+.table-wrapper {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+
+  .table-button-wrapper {
+    width: fit-content;
+
+    .new-row-button {
+      font-size: 12px;
+      min-height: 20px;
+      height: 24px;
+      padding: 0 2px;
+      border: @border;
+    }
+
+    .action-button {
+      min-height: 12px;
+      min-width: 12px;
+      padding: 0;
+      height: 12px;
+      width: 12px;
+    }
+  }
+
+  .table-div {
+    width: fit-content;
+  }
+}
+
+.bp5-table-quadrant-scroll-container {
+  overflow: hidden;
+  &::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(172, 172, 172, 0.6);
+
+    .bp5-dark & {
+      background-color: rgba(172, 172, 172, 0.4);
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+.bp5-table-selection-enabled.bp5-table-row-headers .bp5-table-header {
+  cursor: cell;
+}
