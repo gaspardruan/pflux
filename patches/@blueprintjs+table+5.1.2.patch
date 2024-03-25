@@ -1,0 +1,13 @@
+diff --git a/node_modules/@blueprintjs/table/lib/esm/cell/editableCell2.js b/node_modules/@blueprintjs/table/lib/esm/cell/editableCell2.js
+index 7fa2f53..8c201a1 100644
+--- a/node_modules/@blueprintjs/table/lib/esm/cell/editableCell2.js
++++ b/node_modules/@blueprintjs/table/lib/esm/cell/editableCell2.js
+@@ -53,7 +53,7 @@ var EditableCell2 = /** @class */ (function (_super) {
+                 cellContents = (React.createElement("div", { className: textClasses, ref: _this.contentsRef }, savedValue));
+             }
+             return (React.createElement(Cell, __assign({}, spreadableProps, { wrapText: wrapText, truncated: false, interactive: interactive, cellRef: _this.cellRef, onKeyDown: handleKeyDown, onKeyPress: _this.handleKeyPress, onKeyUp: handleKeyUp, tabIndex: tabIndex }),
+-                React.createElement(Draggable, { onActivate: _this.handleCellActivate, onDoubleClick: _this.handleCellDoubleClick, preventDefault: false, stopPropagation: interactive, targetRef: _this.contentsRef }, cellContents)));
++                React.createElement(Draggable, { onActivate: _this.handleCellActivate, onClick: _this.handleCellDoubleClick, preventDefault: false, stopPropagation: interactive, targetRef: _this.contentsRef }, cellContents)));
+         };
+         _this.handleKeyPress = function () {
+             if (_this.state.isEditing || !_this.props.isFocused) {

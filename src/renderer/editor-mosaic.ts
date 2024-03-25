@@ -94,7 +94,6 @@ export class EditorMosaic {
     let ready = false;
     if (testCase && testCase.length > 0) {
       ready = !testCase.some((row) => Array.from(row.values()).includes(''));
-      console.log(ready);
     }
     return ready;
   }
