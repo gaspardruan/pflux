@@ -5,7 +5,7 @@ import {
   Cell,
   EditableCell2,
 } from '@blueprintjs/table';
-import { Button, Icon } from '@blueprintjs/core';
+import { Button, Text, Icon } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
 import { AppState } from '../state';
 
@@ -14,17 +14,11 @@ interface ITestCaseProps {
 }
 
 export const TestCase = observer(({ appState }: ITestCaseProps) => {
-  const { focusedFuncSignature, testCases } =
+  const { focusedFuncSignature } =
     appState.editorMosaic.mainEditor.testCaseCollection!;
 
-  const getTestCase = () => {
-    if (focusedFuncSignature === '') throw new Error('No focused function');
-    if (testCases.has(focusedFuncSignature)) {
-      return testCases.get(focusedFuncSignature)!;
-    }
-    testCases.set(focusedFuncSignature, []);
-    return testCases.get(focusedFuncSignature)!;
-  };
+  const { testCaseReady, getTestCase, addNewTestCase, deleteTestCase } =
+    appState.editorMosaic;
 
   const parseParams = () => {
     return focusedFuncSignature
@@ -42,7 +36,7 @@ export const TestCase = observer(({ appState }: ITestCaseProps) => {
   const handleAddRowClick = () => {
     const newRow = new Map<string, string>();
     columnNames.forEach((name) => newRow.set(name, ''));
-    testCase.push(newRow);
+    addNewTestCase(newRow);
   };
 
   const cellSetter = (rowIndex: number, columnIndex: number) => {
@@ -71,7 +65,7 @@ export const TestCase = observer(({ appState }: ITestCaseProps) => {
           minimal
           icon={<Icon icon="cross" intent="danger" size={12} />}
           onClick={() => {
-            testCase.splice(rowIndex, 1);
+            deleteTestCase(rowIndex);
           }}
         />
       </Cell>
@@ -109,6 +103,11 @@ export const TestCase = observer(({ appState }: ITestCaseProps) => {
           text="New Row"
           onClick={handleAddRowClick}
         />
+        {!testCaseReady && (
+          <Text className="warning-text bp5-intent-danger">
+            TestCase not Ready
+          </Text>
+        )}
       </div>
     </div>
   );

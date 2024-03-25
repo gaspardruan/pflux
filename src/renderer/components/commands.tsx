@@ -30,6 +30,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
   const {
     cursorPosition,
     cursorWord,
+    testCaseReady,
     show,
     hide,
     disposeSliceEditor,
@@ -204,7 +205,11 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             title="Click to close TestCase window"
             onClick={handleCloseTestCaseClick}
           />
-          <Button disabled={!isTestCaseActive} icon="play" text="Run" />
+          <Button
+            disabled={!isTestCaseActive || !testCaseReady}
+            icon="play"
+            text="Run"
+          />
         </ButtonGroup>
       </div>
       {window.ElectronFlux.platform === 'darwin' ? (

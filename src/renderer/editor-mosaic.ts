@@ -86,6 +86,16 @@ export class EditorMosaic {
     return ![...this.isEditeds.values()].some((edited) => edited);
   }
 
+  public get testCaseReady(): boolean {
+    const testCase = this.getTestCase();
+    let ready = false;
+    if (testCase.length > 0) {
+      console.log(testCase);
+      ready = !testCase.some((row) => Array.from(row.values()).includes(''));
+    }
+    return ready;
+  }
+
   // public get structTree() {
   //   let result: Array<StructNodeInfo> = [];
   //   // eslint-disable-next-line promise/catch-or-return
@@ -118,12 +128,15 @@ export class EditorMosaic {
     makeObservable(this, {
       addFile: action,
       addNewFile: action,
+      addNewTestCase: action,
       backups: observable,
       cursorPosition: observable,
       cursorWord: observable,
+      deleteTestCase: action,
       disposeSliceEditor: action,
       fileContent2: observable,
       focusedGridId: observable,
+      getTestCase: action,
       hide: action,
       isEditeds: computed,
       isSaved: computed,
@@ -149,10 +162,13 @@ export class EditorMosaic {
       setVisible: action,
       show: action,
       structTree: observable,
+      testCaseReady: computed,
       updateMosaic: action,
       updateFocusedFuncSignature: action,
     });
 
+    this.addNewTestCase = this.addNewTestCase.bind(this);
+    this.deleteTestCase = this.deleteTestCase.bind(this);
     this.disposeSliceEditor = this.disposeSliceEditor.bind(this);
     this.hide = this.hide.bind(this);
     this.replaceSliceEditorModel = this.replaceSliceEditorModel.bind(this);
@@ -265,6 +281,27 @@ export class EditorMosaic {
         .slice(4, -1);
     }
   }
+
+  public addNewTestCase(row: Map<string, string>) {
+    const testCase = this.getTestCase();
+    testCase.push(row);
+  }
+
+  public deleteTestCase(rowIndex: number) {
+    const testCase = this.getTestCase();
+    testCase.splice(rowIndex, 1);
+  }
+
+  public getTestCase = () => {
+    const { focusedFuncSignature, testCases } =
+      this.mainEditor.testCaseCollection!;
+    if (focusedFuncSignature === '') throw new Error('No focused function');
+    if (testCases.has(focusedFuncSignature)) {
+      return testCases.get(focusedFuncSignature)!;
+    }
+    testCases.set(focusedFuncSignature, []);
+    return testCases.get(focusedFuncSignature)!;
+  };
 
   public resetLayout() {
     this.mainEditor.mosaic = this.mainEditor.id!;

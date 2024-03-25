@@ -1,3 +1,4 @@
+import { HotkeysProvider } from '@blueprintjs/core';
 import { when, reaction } from 'mobx';
 
 import { AppState } from './state';
@@ -37,9 +38,11 @@ export class App {
 
     const app = (
       <div className="container">
-        <Dialogs appState={this.state} />
-        <Header appState={this.state} />
-        <SidebarEditorsWrapper appState={this.state} />
+        <HotkeysProvider>
+          <Dialogs appState={this.state} />
+          <Header appState={this.state} />
+          <SidebarEditorsWrapper appState={this.state} />
+        </HotkeysProvider>
       </div>
     );
 
