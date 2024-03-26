@@ -28,6 +28,7 @@ import { setupFileListener } from './files';
 import { setupSliceParse } from './core/slice-parse';
 import { setupControlFlow } from './core/control-flow';
 import { setupDefUseLines } from './core/def-use-lines';
+import { setupAnalyzeCoverage } from './core/coverage';
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -56,6 +57,7 @@ export async function onReady() {
   setupSliceParse();
   setupControlFlow();
   setupDefUseLines();
+  setupAnalyzeCoverage();
 
   createWindow();
 }

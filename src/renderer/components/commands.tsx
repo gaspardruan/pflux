@@ -31,6 +31,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     cursorPosition,
     cursorWord,
     testCaseReady,
+    analyzeCoverage,
     show,
     hide,
     disposeSliceEditor,
@@ -209,6 +210,8 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             disabled={!isTestCaseActive || !testCaseReady}
             icon="play"
             text="Run"
+            title="Click to run test case"
+            onClick={analyzeCoverage}
           />
         </ButtonGroup>
       </div>

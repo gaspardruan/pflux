@@ -178,7 +178,7 @@ export class AppState {
       const content = em.mainEditor.editor!.getModel()!.getLineContent(line);
       const signature = content.trim();
       return (
-        signature.startsWith('def') &&
+        this.isPythonFunctionHeader(signature) &&
         signature
           .split('(')[1]
           .split(')')[0]
@@ -187,6 +187,11 @@ export class AppState {
       );
     }
     return false;
+  }
+
+  private isPythonFunctionHeader(str: string) {
+    const pattern = /^def [a-zA-Z_][a-zA-Z0-9_]*\(.*\):$/;
+    return pattern.test(str);
   }
 
   get defUseActive() {

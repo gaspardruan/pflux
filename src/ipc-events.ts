@@ -1,6 +1,7 @@
 export enum IpcEvents {
   CLICK_TITLEBAR_MAC = 'CLICK_TITLEBAR_MAC',
   CONTROL_FLOW = 'CONTROL_FLOW',
+  COVERAGE_STANDARD = 'COVERAGE_STANDARD',
   DEF_USE_LINES = 'DEF_USE_LINES',
   FS_DELETE_FILE = 'FS_DELETE_FILE',
   FS_GET_FILES = 'FS_GET_FILES',
@@ -24,6 +25,7 @@ export enum IpcEvents {
 export const ipcMainEvents = [
   IpcEvents.CLICK_TITLEBAR_MAC,
   IpcEvents.CONTROL_FLOW,
+  IpcEvents.COVERAGE_STANDARD,
   IpcEvents.DEF_USE_LINES,
   IpcEvents.FS_DELETE_FILE,
   IpcEvents.FS_GET_FILES,

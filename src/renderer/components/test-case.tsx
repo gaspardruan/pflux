@@ -8,6 +8,7 @@ import {
 import { Button, Text, Icon } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
 import { AppState } from '../state';
+import { parseFuncSignature } from '../../utils/parse';
 
 interface ITestCaseProps {
   appState: AppState;
@@ -25,18 +26,9 @@ export const TestCase = observer(({ appState }: ITestCaseProps) => {
     setTestCaseValue,
   } = appState.editorMosaic;
 
-  const parseParams = () => {
-    return focusedFuncSignature
-      .split('(')[1]
-      .split(')')[0]
-      .split(',')
-      .map((param) => param.trim())
-      .filter((param) => param !== '');
-  };
-
   const testCase = getTestCase()!;
 
-  const columnNames = parseParams();
+  const columnNames = parseFuncSignature(focusedFuncSignature);
 
   const handleAddRowClick = () => {
     const newRow = new Map<string, string>();

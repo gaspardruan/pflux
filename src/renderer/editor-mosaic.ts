@@ -12,6 +12,7 @@ import {
   TestCaseCollection,
 } from '../interface';
 import { getEmptyContent, sortGrid } from '../utils/editor-utils';
+import { parseFuncSignature } from '../utils/parse';
 
 export type Editor = MonacoType.editor.IStandaloneCodeEditor;
 
@@ -171,6 +172,7 @@ export class EditorMosaic {
     });
 
     this.addNewTestCase = this.addNewTestCase.bind(this);
+    this.analyzeCoverage = this.analyzeCoverage.bind(this);
     this.deleteTestCase = this.deleteTestCase.bind(this);
     this.disposeSliceEditor = this.disposeSliceEditor.bind(this);
     this.hide = this.hide.bind(this);
@@ -311,6 +313,87 @@ export class EditorMosaic {
     }
     testCases.set(focusedFuncSignature, []);
     return testCases.get(focusedFuncSignature)!;
+  };
+
+  private getFocusedFuncBody(range: MonacoType.IRange) {
+    const model = this.mainEditor.editor!.getModel()!;
+    const startLine = range.startLineNumber;
+    const endLine =
+      range.endColumn <= 1 ? range.endLineNumber - 1 : range.endLineNumber;
+    let body = '';
+    // 将函数头的缩进为0，随之调整函数体的缩进
+    const defLine = model.getLineContent(startLine);
+    // 获取 defLine的缩进
+    const indent = defLine.indexOf('def');
+    for (let i = startLine; i <= endLine; i += 1) {
+      body += `${model.getLineContent(i).slice(indent)}\n`;
+    }
+    return body;
+  }
+
+  // 递归获取函数签名对应的函数体
+  private getDefFromStructTree(
+    tree: StructNodeInfo[],
+    funcSignature: string,
+  ): MonacoType.IRange | null {
+    for (const node of tree) {
+      if (node.text === funcSignature) {
+        return node.range;
+      }
+      if (node.code.length > 0) {
+        const res = this.getDefFromStructTree(node.code, funcSignature);
+        if (res) return res;
+      }
+    }
+    return null;
+  }
+
+  private getTestcaseExec(
+    funcSignature: string,
+    testCases: Map<string, string>[],
+  ) {
+    const params = parseFuncSignature(funcSignature);
+    const funcName = funcSignature.split('(')[0];
+    return testCases.map((testCase) => {
+      let line = `${funcName}(`;
+      const args = params.map((param) => {
+        return `${param}=${testCase.get(param)}`;
+      });
+      line += args.join(', ');
+      return `${line})`;
+    });
+  }
+
+  public analyzeCoverage = () => {
+    const { focusedFuncSignature } = this.mainEditor.testCaseCollection!;
+    const range = this.getDefFromStructTree(
+      this.structTree,
+      focusedFuncSignature,
+    );
+    if (!range) {
+      console.error('Function not found');
+      return;
+    }
+    const funcDef = this.getFocusedFuncBody(range);
+    const testCase = this.getTestCase();
+    if (!testCase || testCase.length === 0) {
+      console.error('No test case found');
+      return;
+    }
+    const testCaseExecs = this.getTestcaseExec(focusedFuncSignature, testCase);
+
+    window.ElectronFlux.analyzeCoverage(
+      this.fileContent2,
+      range.startLineNumber,
+      funcDef,
+      testCaseExecs,
+    )
+      .then((res) => {
+        console.log(res);
+      })
+      .catch(() => {
+        // do nothing
+      });
   };
 
   public resetLayout() {

@@ -44,6 +44,20 @@ const electronHandler = {
       }
     }
   },
+  analyzeCoverage(
+    code: string,
+    line: number,
+    funcDef: string,
+    testCaseExecs: string[],
+  ) {
+    return ipcRenderer.invoke(
+      IpcEvents.COVERAGE_STANDARD,
+      code,
+      line,
+      funcDef,
+      testCaseExecs,
+    );
+  },
   deleteFile(folderPath: string, fileName: string): Promise<boolean> {
     return ipcRenderer.invoke(IpcEvents.FS_DELETE_FILE, folderPath, fileName);
   },
