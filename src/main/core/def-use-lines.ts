@@ -16,6 +16,7 @@ import {
 } from '@msrvida/python-program-analysis';
 import { findSeedName, within } from './common';
 import { DefUseCollection, DCPath, UseType } from '../../interface';
+import { IpcEvents } from '../../ipc-events';
 
 export function findFunctionAtLocation(
   code: string,
@@ -188,7 +189,7 @@ export function getDefUseLines(
 
 export function setupDefUseLines() {
   ipcMain.handle(
-    'DEF_USE_LINES',
+    IpcEvents.DEF_USE_LINES,
     (_event, code: string, location: Location) => {
       try {
         return getDefUseLines(code, location);
