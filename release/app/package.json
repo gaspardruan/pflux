@@ -1,12 +1,12 @@
 {
-  "name": "electron-react-boilerplate",
-  "version": "4.6.0",
-  "description": "A foundation for scalable desktop apps",
+  "name": "Pflux",
+  "version": "0.0.1",
+  "description": "An educational tool for learning about dataflow testing",
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://github.com/electron-react-boilerplate"
+    "name": "Gaspard Ruan",
+    "email": "gaspardruan@gmail.com",
+    "url": "https://github.com/gaspardruan/pflux"
   },
   "main": "./dist/main/main.js",
   "scripts": {
