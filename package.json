@@ -21,9 +21,9 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
+    "name": "Gaspard Ruan",
+    "email": "gaspardruan@gmail.com",
+    "url": "https://github.com/gaspardruan/pflux"
   },
   "contributors": [
     {
@@ -193,7 +193,7 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "ElectronReact",
+    "productName": "Pflux",
     "appId": "org.erb.ElectronReact",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
