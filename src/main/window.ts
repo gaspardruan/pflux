@@ -24,7 +24,7 @@ export function getMainWindowOptions(): Electron.BrowserWindowConstructorOptions
     minHeight: 600,
     minWidth: 600,
     backgroundColor: '#1d2427',
-    icon: getAssetPath('icon.ico'),
+    icon: getAssetPath('icons/32x32.png'),
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
