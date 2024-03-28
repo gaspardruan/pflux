@@ -114,6 +114,7 @@ export class AppState {
     this.clearSlice = this.clearSlice.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
     this.setupDefUse = this.setupDefUse.bind(this);
+    this.analyzeCoverage = this.analyzeCoverage.bind(this);
     this.clearDefUse = this.clearDefUse.bind(this);
 
     // Setup auto-runs
@@ -207,6 +208,13 @@ export class AppState {
     const { mosaic, id } = this.editorMosaic.mainEditor;
     return getLeaves(mosaic).some(
       (v) => v === getGridId(WinType.TESTCASE, id!),
+    );
+  }
+
+  get isCoverageAnalysisActive() {
+    const { mosaic, id } = this.editorMosaic.mainEditor;
+    return getLeaves(mosaic).some(
+      (v) => v === getGridId(WinType.ANALYSIS, id!),
     );
   }
 
@@ -359,6 +367,8 @@ export class AppState {
 
   public clearSlice() {
     this.editorMosaic.mainEditor.lineCollection = [];
+    if (this.editorMosaic.mainEditor.sliceEditor)
+      this.editorMosaic.mainEditor.sliceEditor.setValue('');
     this.editorMosaic.mainEditor.varDepGraph = '';
     if (this.editorMosaic.tempLineDecorations) {
       this.editorMosaic.tempLineDecorations.clear();
@@ -430,6 +440,38 @@ export class AppState {
         // do nothing
       });
   }
+
+  public analyzeCoverage = () => {
+    const em = this.editorMosaic;
+    const { focusedFuncSignature } = em.mainEditor.testCaseCollection!;
+    const range = em.getDefFromStructTree(em.structTree, focusedFuncSignature);
+    if (!range) {
+      console.error('Function not found');
+      return;
+    }
+    const funcDef = em.getFocusedFuncBody(range);
+    const testCase = em.getTestCase();
+    if (!testCase || testCase.length === 0) {
+      console.error('No test case found');
+      return;
+    }
+    const testCaseExecs = em.getTestcaseExec(focusedFuncSignature, testCase);
+
+    window.ElectronFlux.analyzeCoverage(
+      em.fileContent2,
+      range.startLineNumber,
+      funcDef,
+      testCaseExecs,
+    )
+      .then((res) => {
+        em.setCoverageAnalysis(res);
+        if (!this.isCoverageAnalysisActive)
+          em.show(getGridId(WinType.ANALYSIS, em.mainEditor.id!));
+      })
+      .catch(() => {
+        // do nothing
+      });
+  };
 
   /**
    * Save a key/value to localStorage.

@@ -10,6 +10,7 @@ import {
   SliceId,
   StructNodeInfo,
   TestCaseCollection,
+  CoverageResult,
 } from '../interface';
 import { getEmptyContent, sortGrid } from '../utils/editor-utils';
 import { parseFuncSignature } from '../utils/parse';
@@ -28,6 +29,7 @@ interface EditorBackup {
   testCaseCollection: TestCaseCollection;
   cfgMermaid: string;
   varDepGraph: string;
+  coverageAnalysis: CoverageResult | null;
 }
 
 export class EditorMosaic {
@@ -44,6 +46,7 @@ export class EditorMosaic {
     testCaseCollection: TestCaseCollection | null;
     cfgMermaid: string | null;
     varDepGraph: string | null;
+    coverageAnalysis: CoverageResult | null;
   } = {
     editor: null,
     sliceEditor: null,
@@ -56,6 +59,7 @@ export class EditorMosaic {
     testCaseCollection: null,
     cfgMermaid: null,
     varDepGraph: null,
+    coverageAnalysis: null,
   };
 
   public backups = new Map<EditorId, EditorBackup>();
@@ -98,16 +102,6 @@ export class EditorMosaic {
     }
     return ready;
   }
-
-  // public get structTree() {
-  //   let result: Array<StructNodeInfo> = [];
-  //   // eslint-disable-next-line promise/catch-or-return
-  //   window.ElectronFlux.parseStruct(this.fileContent2).then((res) => {
-  //     result = res;
-  //   });
-  //   return result;
-  //   return `test${this.fileContent2}`;
-  // }
 
   public focusedGridId: GridId | null = null;
 
@@ -152,6 +146,7 @@ export class EditorMosaic {
       set: action,
       setCFGMermaid: action,
       setCursorWord: action,
+      setCoverageAnalysis: action,
       setDefUseCollection: action,
       setFileContent2: action,
       setFocusedGridId: action,
@@ -172,7 +167,6 @@ export class EditorMosaic {
     });
 
     this.addNewTestCase = this.addNewTestCase.bind(this);
-    this.analyzeCoverage = this.analyzeCoverage.bind(this);
     this.deleteTestCase = this.deleteTestCase.bind(this);
     this.disposeSliceEditor = this.disposeSliceEditor.bind(this);
     this.hide = this.hide.bind(this);
@@ -249,6 +243,10 @@ export class EditorMosaic {
     this.mainEditor.varDepGraph = val;
   }
 
+  public setCoverageAnalysis(val: CoverageResult) {
+    this.mainEditor.coverageAnalysis = val;
+  }
+
   public updateMosaic(mosaic: MosaicNode<GridId> | null) {
     this.mainEditor.mosaic = mosaic;
   }
@@ -315,7 +313,7 @@ export class EditorMosaic {
     return testCases.get(focusedFuncSignature)!;
   };
 
-  private getFocusedFuncBody(range: MonacoType.IRange) {
+  public getFocusedFuncBody(range: MonacoType.IRange) {
     const model = this.mainEditor.editor!.getModel()!;
     const startLine = range.startLineNumber;
     const endLine =
@@ -332,7 +330,7 @@ export class EditorMosaic {
   }
 
   // 递归获取函数签名对应的函数体
-  private getDefFromStructTree(
+  public getDefFromStructTree(
     tree: StructNodeInfo[],
     funcSignature: string,
   ): MonacoType.IRange | null {
@@ -348,7 +346,7 @@ export class EditorMosaic {
     return null;
   }
 
-  private getTestcaseExec(
+  public getTestcaseExec(
     funcSignature: string,
     testCases: Map<string, string>[],
   ) {
@@ -363,38 +361,6 @@ export class EditorMosaic {
       return `${line})`;
     });
   }
-
-  public analyzeCoverage = () => {
-    const { focusedFuncSignature } = this.mainEditor.testCaseCollection!;
-    const range = this.getDefFromStructTree(
-      this.structTree,
-      focusedFuncSignature,
-    );
-    if (!range) {
-      console.error('Function not found');
-      return;
-    }
-    const funcDef = this.getFocusedFuncBody(range);
-    const testCase = this.getTestCase();
-    if (!testCase || testCase.length === 0) {
-      console.error('No test case found');
-      return;
-    }
-    const testCaseExecs = this.getTestcaseExec(focusedFuncSignature, testCase);
-
-    window.ElectronFlux.analyzeCoverage(
-      this.fileContent2,
-      range.startLineNumber,
-      funcDef,
-      testCaseExecs,
-    )
-      .then((res) => {
-        console.log(res);
-      })
-      .catch(() => {
-        // do nothing
-      });
-  };
 
   public resetLayout() {
     this.mainEditor.mosaic = this.mainEditor.id!;
@@ -449,7 +415,7 @@ export class EditorMosaic {
       this.pendingBackup = {
         model: this.mainEditor.editor!.getModel()!,
         viewState: this.mainEditor.editor!.saveViewState(),
-        mosaic: this.getTidyMosaic(),
+        mosaic: this.mainEditor.mosaic!,
         position: this.mainEditor.editor!.getPosition(),
         isEdited: this.mainEditor.isEdited,
         structExpandRecord: this.mainEditor.structExpandRecord!,
@@ -458,25 +424,27 @@ export class EditorMosaic {
         testCaseCollection: this.mainEditor.testCaseCollection!,
         cfgMermaid: this.mainEditor.cfgMermaid!,
         varDepGraph: this.mainEditor.varDepGraph!,
+        coverageAnalysis: this.mainEditor.coverageAnalysis,
       };
     this.mainEditor.cfgMermaid = backup.cfgMermaid;
     this.mainEditor.varDepGraph = backup.varDepGraph;
     this.mainEditor.sliceEditor = null;
     this.mainEditor.testCaseCollection = backup.testCaseCollection;
+    this.mainEditor.coverageAnalysis = backup.coverageAnalysis;
     this.mainEditor.mosaic = backup.mosaic;
   }
 
-  public getTidyMosaic() {
-    const sliceNotActive = this.mainEditor.lineCollection!.length === 0;
-    let leaves = getLeaves(this.mainEditor.mosaic);
-    if (sliceNotActive) {
-      leaves = leaves.filter(
-        (v) => !v.endsWith('__VarDep') && !v.endsWith('__Slice'),
-      );
-    }
-    leaves = sortGrid(leaves);
-    return this.createMosaic(leaves);
-  }
+  // public getTidyMosaic() {
+  //   const sliceNotActive = this.mainEditor.lineCollection!.length === 0;
+  //   let leaves = getLeaves(this.mainEditor.mosaic);
+  //   if (sliceNotActive) {
+  //     leaves = leaves.filter(
+  //       (v) => !v.endsWith('__VarDep') && !v.endsWith('__Slice'),
+  //     );
+  //   }
+  //   leaves = sortGrid(leaves);
+  //   return this.createMosaic(leaves);
+  // }
 
   public renameFile(oldId: EditorId, newId: EditorId) {
     if (oldId === newId) return;
@@ -506,6 +474,7 @@ export class EditorMosaic {
         testCaseCollection: this.mainEditor.testCaseCollection!,
         cfgMermaid: this.mainEditor.cfgMermaid!,
         varDepGraph: this.mainEditor.varDepGraph!,
+        coverageAnalysis: this.mainEditor.coverageAnalysis,
       });
       this.mainEditor.mosaic = newId;
     }
@@ -728,6 +697,7 @@ export class EditorMosaic {
       },
       cfgMermaid: '',
       varDepGraph: '',
+      coverageAnalysis: null,
     };
     this.backups.set(id, backup);
   }

@@ -21,11 +21,29 @@ import { ipcMain } from 'electron';
 import { IpcEvents } from '../../ipc-events';
 import { cyrb53 } from '../utils/hash';
 import { fixFunction } from './def-use-lines';
+import {
+  DataflowRecord,
+  DataflowGroupOnlyUse,
+  CoverageStandard,
+  CoverageResult,
+} from '../../interface';
 
 const START_LINE = 2;
 const TEMP_DIR = os.tmpdir();
 
 const exec = util.promisify(require('child_process').exec);
+
+export interface DataflowGroup {
+  pUses: DataFlowRecordSet;
+  cUses: DataFlowRecordSet;
+  defLines: Set<number>;
+}
+
+export class DataFlowRecordSet extends SSet<DataflowRecord> {
+  constructor(...items: DataflowRecord[]) {
+    super((d) => `${d.startLine}-${d.endLine}`, ...items);
+  }
+}
 
 export function getPythonScript(funcDef: string, command: string) {
   // 根据当前时间产生唯一文件名
@@ -71,44 +89,6 @@ export function findFunctionAtLine(code: string, line: number): Module {
     code: func.code,
     location: func.location,
   };
-}
-
-interface DataFlowRecord {
-  startLine: number;
-  endLine: number;
-  covered: boolean;
-}
-
-export class DataFlowRecordSet extends SSet<DataFlowRecord> {
-  constructor(...items: DataFlowRecord[]) {
-    super((d) => `${d.startLine}-${d.endLine}`, ...items);
-  }
-}
-
-interface DataflowGroup {
-  pUses: DataFlowRecordSet;
-  cUses: DataFlowRecordSet;
-  defLines: Set<number>;
-}
-
-interface DataflowGroupOnlyUse {
-  pUses: DataFlowRecord[];
-  cUses: DataFlowRecord[];
-}
-
-interface CoverageStandard {
-  allDef: boolean;
-  allCUse: boolean;
-  allPUse: boolean;
-  allCUseSomePuse: boolean;
-  allPUseSomeCUse: boolean;
-  allUse: boolean;
-}
-
-interface CoverageResult {
-  standard: CoverageStandard;
-  execPaths: number[][];
-  detail: Map<string, DataflowGroupOnlyUse>;
 }
 
 export function getDataflowAggregation(
@@ -171,7 +151,7 @@ export function slicePath(_path: number[], _defLines: Set<number>) {
   return res;
 }
 
-export function pathCoverDataflow(_path: number[], _flow: DataFlowRecord) {
+export function pathCoverDataflow(_path: number[], _flow: DataflowRecord) {
   let startMatched = false;
   for (let i = 0; i < _path.length; i += 1) {
     if (startMatched && _path[i] === _flow.endLine) {
@@ -183,7 +163,7 @@ export function pathCoverDataflow(_path: number[], _flow: DataFlowRecord) {
   return _flow.covered;
 }
 
-export function pathsCoverDataflow(_paths: number[][], _flow: DataFlowRecord) {
+export function pathsCoverDataflow(_paths: number[][], _flow: DataflowRecord) {
   if (_flow.covered) return true;
   for (let i = 0; i < _paths.length; i += 1) {
     if (pathCoverDataflow(_paths[i], _flow)) break;

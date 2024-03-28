@@ -13,11 +13,13 @@ import { Editor } from './editor';
 import { EditorReadOnly } from './editor-read-only';
 import { MaximizeButton, RemoveButton } from './editors-toolbar-button';
 import {
+  AnalysisId,
   CFGId,
   EditorId,
   FlowId,
   GridId,
   SliceId,
+  TestCaseId,
   VarDepId,
 } from '../../interface';
 import { AppState } from '../state';
@@ -29,6 +31,7 @@ import { VarDep } from './var-dep';
 import { MarkTag } from './mark-tag';
 import { DCPath } from './dc-path';
 import { TestCase } from './test-case';
+import { CoverageAnalysis } from './coverage-analysis';
 
 const defaultMonacoOptions: MonacoType.editor.IEditorOptions = {
   minimap: {
@@ -263,6 +266,10 @@ export const Editors = observer(({ appState }: EditorsProps) => {
     return <TestCase appState={appState} />;
   };
 
+  const renderCoverageAnalysis = (): React.JSX.Element | null => {
+    return <CoverageAnalysis appState={appState} />;
+  };
+
   /**
    * Renders a Mosaic tile
    *
@@ -352,8 +359,23 @@ export const Editors = observer(({ appState }: EditorsProps) => {
       );
     }
     if (_id.endsWith('__TestCase')) {
-      const id = _id as FlowId;
+      const id = _id as TestCaseId;
       const content = renderTestCase();
+      return (
+        <MosaicWindow<GridId>
+          path={path}
+          title={title}
+          renderToolbar={(props: MosaicWindowProps<GridId>) =>
+            renderToolbar(props, id)
+          }
+        >
+          {content}
+        </MosaicWindow>
+      );
+    }
+    if (_id.endsWith('__Analysis')) {
+      const id = _id as AnalysisId;
+      const content = renderCoverageAnalysis();
       return (
         <MosaicWindow<GridId>
           path={path}

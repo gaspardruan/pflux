@@ -130,3 +130,29 @@ export interface TestCaseCollection {
   focusedFuncSignature: string;
   testCases: Map<string, Map<string, string>[]>;
 }
+
+export interface DataflowRecord {
+  startLine: number;
+  endLine: number;
+  covered: boolean;
+}
+
+export interface DataflowGroupOnlyUse {
+  pUses: DataflowRecord[];
+  cUses: DataflowRecord[];
+}
+
+export interface CoverageStandard {
+  allDef: boolean;
+  allCUse: boolean;
+  allPUse: boolean;
+  allCUseSomePuse: boolean;
+  allPUseSomeCUse: boolean;
+  allUse: boolean;
+}
+
+export interface CoverageResult {
+  standard: CoverageStandard;
+  execPaths: number[][];
+  detail: Map<string, DataflowGroupOnlyUse>;
+}

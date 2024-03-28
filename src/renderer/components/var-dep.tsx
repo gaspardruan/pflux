@@ -2,6 +2,7 @@ import { observer } from 'mobx-react';
 import mermaid from 'mermaid';
 import svgPanZoom from 'svg-pan-zoom';
 import { useEffect, useRef } from 'react';
+import { NonIdealState } from '@blueprintjs/core';
 
 import { AppState } from '../state';
 
@@ -65,5 +66,9 @@ export const VarDep = observer(({ appState }: IControlFlowProps) => {
     if (varDepGraph) drawDiagram();
   }, [varDepGraph, setPanZoom]);
 
-  return <div className="mermaid" ref={ref} />;
+  return varDepGraph ? (
+    <div className="mermaid" ref={ref} />
+  ) : (
+    <NonIdealState icon="applications" description="No VarDep Graph is drew" />
+  );
 });

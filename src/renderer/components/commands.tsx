@@ -21,6 +21,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     testCaseButtonEnabled,
     dcPathExtractActive,
     isTestCaseActive,
+    analyzeCoverage,
     parseSlice,
     clearSlice,
     setupDefUse,
@@ -31,7 +32,6 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     cursorPosition,
     cursorWord,
     testCaseReady,
-    analyzeCoverage,
     show,
     hide,
     disposeSliceEditor,
@@ -95,12 +95,17 @@ export const Commands = observer(({ appState }: CommandsProps) => {
   };
 
   const handleTestCaseClick = () => {
-    updateFocusedFuncSignature();
-    show(getGridId(WinType.TESTCASE, id!));
+    if (!isTestCaseActive) {
+      updateFocusedFuncSignature();
+      show(getGridId(WinType.TESTCASE, id!));
+    } else {
+      hide(getGridId(WinType.TESTCASE, id!));
+      hide(getGridId(WinType.ANALYSIS, id!));
+    }
   };
 
-  const handleCloseTestCaseClick = () => {
-    hide(getGridId(WinType.TESTCASE, id!));
+  const handleCoverageAnalysisClick = () => {
+    analyzeCoverage();
   };
 
   return (
@@ -194,24 +199,18 @@ export const Commands = observer(({ appState }: CommandsProps) => {
         <ButtonGroup fill>
           <Button
             disabled={!testCaseButtonEnabled}
+            active={isTestCaseActive}
             icon="manually-entered-data"
             text="TestCase"
             title="Please place the cursor on the def line of a function with params"
             onClick={handleTestCaseClick}
           />
           <Button
-            disabled={!isTestCaseActive}
-            icon="drawer-right"
-            text="Close"
-            title="Click to close TestCase window"
-            onClick={handleCloseTestCaseClick}
-          />
-          <Button
             disabled={!isTestCaseActive || !testCaseReady}
             icon="play"
             text="Run"
             title="Click to run test case"
-            onClick={analyzeCoverage}
+            onClick={handleCoverageAnalysisClick}
           />
         </ButtonGroup>
       </div>

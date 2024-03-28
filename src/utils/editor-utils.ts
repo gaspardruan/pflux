@@ -58,7 +58,7 @@ export function getEditorTitle(id: GridId): string {
   }
   if (id.endsWith('__Analysis')) {
     const name = id.split('__')[0];
-    return `Analysis (${name})`;
+    return `Coverage Analysis (${name})`;
   }
   if (id.endsWith('__CFG')) {
     const name = id.split('__')[0];
