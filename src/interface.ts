@@ -153,6 +153,7 @@ export interface CoverageStandard {
 
 export interface CoverageResult {
   standard: CoverageStandard;
+  standard2Mermaid: string;
   execPaths: number[][];
   detail: Map<string, DataflowGroupOnlyUse>;
 }

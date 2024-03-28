@@ -217,6 +217,29 @@ export function analyzeCoverageStandard(
   };
 }
 
+export function standard2Mermaid(standard: CoverageStandard) {
+  let mermaid = `block-beta
+  columns 6
+  allUse["All Uses"]:6
+  allCUseSomePUse["All C-Uses\nsome P-Uses"]:3
+  allPUseSomeCUse["All P-Uses\nsome C-Uses"]:3
+  allPUse["All P-Uses"]:2
+  allCUse["All C-Uses"]:2
+  allDef["All Defs"]:2`;
+
+  const cls = Object.entries(standard)
+    .map(([key, value]) => {
+      return value ? key : '';
+    })
+    .filter((v) => v)
+    .join(',');
+  mermaid += `
+  class ${cls} active
+  classDef active fill:`;
+
+  return mermaid;
+}
+
 export async function getExecPaths(
   line: number,
   funcDef: string,
@@ -279,8 +302,11 @@ export async function analyzeCoverage(
     });
   });
 
+  const standard = analyzeCoverageStandard(dataflowGroups);
+
   return {
-    standard: analyzeCoverageStandard(dataflowGroups),
+    standard,
+    standard2Mermaid: standard2Mermaid(standard),
     execPaths,
     detail: dataflowGroupsOnlyUse,
   };
@@ -309,6 +335,7 @@ export function setupAnalyzeCoverage() {
             allPUseSomeCUse: false,
             allUse: false,
           },
+          standard2Mermaid: '',
           execPaths: [],
           detail: new Map<string, DataflowGroupOnlyUse>(),
         };
