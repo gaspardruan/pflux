@@ -473,6 +473,10 @@ export class AppState {
       });
   };
 
+  public clearCoverageAnalysis() {
+    this.editorMosaic.mainEditor.coverageAnalysis = null;
+  }
+
   /**
    * Save a key/value to localStorage.
    *

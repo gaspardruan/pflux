@@ -24,6 +24,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     analyzeCoverage,
     parseSlice,
     clearSlice,
+    clearCoverageAnalysis,
     setupDefUse,
     clearDefUse,
     setupControlFlow,
@@ -101,6 +102,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     } else {
       hide(getGridId(WinType.TESTCASE, id!));
       hide(getGridId(WinType.ANALYSIS, id!));
+      clearCoverageAnalysis();
     }
   };
 
