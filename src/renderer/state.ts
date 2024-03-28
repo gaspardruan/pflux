@@ -72,6 +72,7 @@ export class AppState {
       cfgButtonEnabled: computed,
       clearSlice: action,
       clearDefUse: action,
+      clearCoverageAnalysis: action,
       controlFlowActive: computed,
       dcPathExtractActive: computed,
       defUseActive: computed,
@@ -116,6 +117,7 @@ export class AppState {
     this.setupDefUse = this.setupDefUse.bind(this);
     this.analyzeCoverage = this.analyzeCoverage.bind(this);
     this.clearDefUse = this.clearDefUse.bind(this);
+    this.clearCoverageAnalysis = this.clearCoverageAnalysis.bind(this);
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
