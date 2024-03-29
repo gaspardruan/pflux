@@ -1,8 +1,19 @@
 import { observer } from 'mobx-react';
 import { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
-import { Colors, Icon, Tag } from '@blueprintjs/core';
+import {
+  Callout,
+  CardList,
+  Colors,
+  Icon,
+  Tag,
+  Text,
+  Card,
+  Popover,
+  Button,
+} from '@blueprintjs/core';
 import { AppState } from '../state';
+import { PathCard } from './path-card';
 
 interface ICoverageAnalysisProps {
   appState: AppState;
@@ -54,6 +65,7 @@ export const CoverageAnalysis = observer(
         <h3>Function: {focusedFuncSignature || ''} </h3>
         <div className="title-with-mark">
           <h4>Coverage Standard</h4>
+
           <div className="mark">
             <Icon className="mark-tag-achieved" icon="symbol-square" />
             <Tag minimal className="mark-tag">
@@ -63,6 +75,16 @@ export const CoverageAnalysis = observer(
         </div>
 
         <div className="mermaid mermaid-inline" ref={ref} />
+
+        <h4>Execution Path</h4>
+
+        <CardList className="path-list" compact>
+          {coverageAnalysis?.execPaths.map((path, index) => (
+            <PathCard path={path} index={index} />
+          ))}
+        </CardList>
+
+        <h4>Path Coverage</h4>
       </div>
     );
   },
