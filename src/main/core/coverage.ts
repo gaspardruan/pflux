@@ -203,15 +203,15 @@ export function analyzeCoverageStandard(
   const allPUse = Array.from(allPUseFlag.values()).every((v) => v);
   const allCUse = Array.from(allCUseFlag.values()).every((v) => v);
 
-  const allCUseSomePuse = allCUse && allDef;
+  const allCUseSomePUse = allCUse && allDef;
   const allPUseSomeCUse = allPUse && allDef;
-  const allUse = allCUseSomePuse && allPUseSomeCUse;
+  const allUse = allCUseSomePUse && allPUseSomeCUse;
 
   return {
     allDef,
     allCUse,
     allPUse,
-    allCUseSomePuse,
+    allCUseSomePUse,
     allPUseSomeCUse,
     allUse,
   };
@@ -223,9 +223,9 @@ export function standard2Mermaid(standard: CoverageStandard) {
   allUse["All Uses"]:6
   allCUseSomePUse["All C-Uses\nsome P-Uses"]:3
   allPUseSomeCUse["All P-Uses\nsome C-Uses"]:3
-  allPUse["All P-Uses"]:2
   allCUse["All C-Uses"]:2
-  allDef["All Defs"]:2`;
+  allDef["All Defs"]:2
+  allPUse["All P-Uses"]:2`;
 
   const cls = Object.entries(standard)
     .map(([key, value]) => {

@@ -146,7 +146,7 @@ export interface CoverageStandard {
   allDef: boolean;
   allCUse: boolean;
   allPUse: boolean;
-  allCUseSomePuse: boolean;
+  allCUseSomePUse: boolean;
   allPUseSomeCUse: boolean;
   allUse: boolean;
 }
