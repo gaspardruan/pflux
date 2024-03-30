@@ -258,7 +258,9 @@ export async function getExecPaths(
   });
 
   const result = await Promise.all(
-    tempScriptPaths.map((p) => exec(`python -u ${p}`)),
+    tempScriptPaths.map((p) =>
+      exec(`python -u ${p}`, { maxBuffer: 1024 * 1024 * 64 }),
+    ),
   );
 
   // delete files asynchronously
@@ -315,7 +317,7 @@ export async function analyzeCoverage(
 export function setupAnalyzeCoverage() {
   ipcMain.handle(
     IpcEvents.COVERAGE_STANDARD,
-    async (
+    (
       _event,
       code: string,
       line: number,
@@ -323,7 +325,7 @@ export function setupAnalyzeCoverage() {
       testCaseExecs: string[],
     ) => {
       try {
-        return await analyzeCoverage(code, line, funcDef, testCaseExecs);
+        return analyzeCoverage(code, line, funcDef, testCaseExecs);
       } catch (e) {
         console.error(e);
         return {

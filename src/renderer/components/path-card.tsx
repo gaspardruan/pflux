@@ -39,7 +39,7 @@ export const PathCard = ({
   };
 
   return (
-    <Card key={index} compact>
+    <Card compact>
       <Tag minimal>{index + 1}</Tag>
       <Text className="path-text" ref={ref} ellipsize>
         {pathStr}

@@ -1,22 +1,22 @@
 import { observer } from 'mobx-react';
 import { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
-import {
-  Callout,
-  CardList,
-  Colors,
-  Icon,
-  Tag,
-  Text,
-  Card,
-  Popover,
-  Button,
-} from '@blueprintjs/core';
+import { CardList, Colors, Icon, Tag } from '@blueprintjs/core';
+import { Table2, Column, SelectionModes, Cell } from '@blueprintjs/table';
 import { AppState } from '../state';
 import { PathCard } from './path-card';
+import { UseType } from '../../interface';
 
 interface ICoverageAnalysisProps {
   appState: AppState;
+}
+
+interface TableColum {
+  varName: string;
+  startLine: number;
+  endLine: number;
+  useType: UseType;
+  covered: boolean;
 }
 
 mermaid.initialize({
@@ -40,6 +40,64 @@ export const CoverageAnalysis = observer(
     const coloredMermaid = coverageAnalysis!.standard2Mermaid + Colors.GREEN3;
 
     const ref = useRef<null | HTMLDivElement>(null);
+
+    const coverage2TableColumn = () => {
+      const tableColumn: TableColum[] = [];
+      coverageAnalysis!.detail.forEach((dataflowGroup, varName) => {
+        dataflowGroup.cUses.forEach((record) => {
+          tableColumn.push({
+            varName,
+            startLine: record.startLine,
+            endLine: record.endLine,
+            useType: UseType.C,
+            covered: record.covered,
+          });
+        });
+        dataflowGroup.pUses.forEach((record) => {
+          tableColumn.push({
+            varName,
+            startLine: record.startLine,
+            endLine: record.endLine,
+            useType: UseType.P,
+            covered: record.covered,
+          });
+        });
+      });
+      return tableColumn;
+    };
+
+    const tableData = coverage2TableColumn();
+
+    // console.log(tableData);
+    // console.log(coverageAnalysis?.standard2Mermaid);
+
+    const renderVariable = (rowIndex: number) => (
+      <Cell>{tableData[rowIndex].varName}</Cell>
+    );
+
+    const renderStartLine = (rowIndex: number) => (
+      <Cell>{tableData[rowIndex].startLine}</Cell>
+    );
+
+    const renderEndLine = (rowIndex: number) => (
+      <Cell>{tableData[rowIndex].endLine}</Cell>
+    );
+
+    const renderUseType = (rowIndex: number) => (
+      <Cell>
+        {tableData[rowIndex].useType === UseType.C ? 'C-use' : 'P-use'}
+      </Cell>
+    );
+
+    const renderCovered = (rowIndex: number) => (
+      <Cell>
+        {tableData[rowIndex].covered ? (
+          <Icon icon="tick" color={Colors.GREEN3} />
+        ) : (
+          <Icon icon="cross" color={Colors.RED3} />
+        )}
+      </Cell>
+    );
 
     useEffect(() => {
       const drawDiagram = async () => {
@@ -80,11 +138,27 @@ export const CoverageAnalysis = observer(
 
         <CardList className="path-list" compact>
           {coverageAnalysis?.execPaths.map((path, index) => (
-            <PathCard path={path} index={index} />
+            // eslint-disable-next-line react/no-array-index-key
+            <PathCard key={index} path={path} index={index} />
           ))}
         </CardList>
 
         <h4>Path Coverage</h4>
+        <div className="table-div">
+          <Table2
+            columnWidths={[80, 80, 80, 80, 80]}
+            numRows={tableData.length}
+            enableRowResizing={false}
+            selectionModes={SelectionModes.ROWS_ONLY}
+            cellRendererDependencies={[tableData]}
+          >
+            <Column name="Variable" cellRenderer={renderVariable} />
+            <Column name="StartLine" cellRenderer={renderStartLine} />
+            <Column name="EndLine" cellRenderer={renderEndLine} />
+            <Column name="UseType" cellRenderer={renderUseType} />
+            <Column name="Covered" cellRenderer={renderCovered} />
+          </Table2>
+        </div>
       </div>
     );
   },
