@@ -19,18 +19,6 @@ interface TableColum {
   covered: boolean;
 }
 
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'dark',
-  securityLevel: 'loose',
-  fontFamily: 'consolas, monospace',
-  themeCSS: `
-    .nodeLabel {
-      text-align: left;
-    }
-  `,
-});
-
 export const CoverageAnalysis = observer(
   ({ appState }: ICoverageAnalysisProps) => {
     const { focusedFuncSignature } =

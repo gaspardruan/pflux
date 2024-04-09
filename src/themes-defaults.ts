@@ -1,9 +1,11 @@
+import { MermaidConfig } from 'mermaid';
 import type * as MonacoType from 'monaco-editor';
 
 export interface FluxTheme {
   name?: string;
   isDark?: boolean;
   editor: Partial<MonacoType.editor.IStandaloneThemeData>;
+  mermaidConfig: MermaidConfig;
   common: {
     'fonts-common': string;
     'foreground-1': string;
@@ -61,7 +63,19 @@ export const defaultDark: LoadedFluxTheme = {
     rules: [{ token: 'custom-date', foreground: '#008800' }],
     colors: {
       'editor.background': '#2f3241',
+      'editor.wordHighlightBackground': '#2f324100',
     },
+  },
+  mermaidConfig: {
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    fontFamily: 'consolas, monospace',
+    themeCSS: `
+        .nodeLabel {
+          text-align: left;
+        }
+      `,
   },
 };
 
@@ -91,7 +105,20 @@ export const defaultLight: LoadedFluxTheme = {
     base: 'vs',
     inherit: true,
     rules: [{ token: 'custom-date', foreground: '#008800' }],
-    colors: {},
+    colors: {
+      'editor.wordHighlightBackground': '#ffffff00',
+    },
+  },
+  mermaidConfig: {
+    startOnLoad: false,
+    theme: 'neutral',
+    securityLevel: 'loose',
+    fontFamily: 'consolas, monospace',
+    themeCSS: `
+        .nodeLabel {
+          text-align: left;
+        }
+      `,
   },
 };
 

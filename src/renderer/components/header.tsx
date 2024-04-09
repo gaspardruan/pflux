@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react';
+import classNames from 'classnames';
 
 import { Commands } from './commands';
 import { AppState } from '../state';
@@ -8,12 +9,11 @@ interface HeaderProps {
 }
 
 export const Header = observer(({ appState }: HeaderProps) => {
-  const { isHeaderFocusable } = appState;
-
+  const { isSettingsShowing } = appState;
   return (
     <header
       id="header"
-      className={!isHeaderFocusable ? 'tabbing-hidden' : undefined}
+      className={classNames({ 'tabbing-hidden': isSettingsShowing })}
     >
       <Commands key="commands" appState={appState} />
     </header>

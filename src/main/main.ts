@@ -50,6 +50,7 @@ export async function onReady() {
   setupAboutPanel();
   setupMenu();
   setupTitleBarClickMac();
+  setupNativeTheme();
   setupContent();
   setupFileListener();
 
@@ -122,8 +123,10 @@ function isNativeThemeSource(
  */
 export function setupNativeTheme() {
   ipcMain.on(IpcEvents.SET_NATIVE_THEME, (_, source: string) => {
+    console.log(`Setting theme to ${source}`);
     if (isNativeThemeSource(source)) {
       nativeTheme.themeSource = source;
+      console.log(`Theme set to ${source}`);
     }
   });
 }

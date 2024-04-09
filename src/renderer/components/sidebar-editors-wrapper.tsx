@@ -12,6 +12,7 @@ interface WrapperProps {
 
 // TODO: refactor the state;
 export const SidebarEditorsWrapper = observer(({ appState }: WrapperProps) => {
+  const { isSettingsShowing } = appState;
   const MOSAIC_ELEMENTS = {
     sidebar: <Sidebar appState={appState} />,
     editors: <Editors appState={appState} />,
@@ -29,6 +30,7 @@ export const SidebarEditorsWrapper = observer(({ appState }: WrapperProps) => {
         second: 'editors',
         splitPercentage: 25,
       }}
+      className={isSettingsShowing ? 'tabbing-hidden' : undefined}
     />
   );
 });

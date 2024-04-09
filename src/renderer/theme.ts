@@ -1,3 +1,4 @@
+import mermaid from 'mermaid';
 import {
   DefaultThemes,
   FluxTheme,
@@ -15,6 +16,8 @@ export function activateTheme(theme: LoadedFluxTheme) {
   const { monaco } = window;
   monaco.editor.defineTheme('main', theme.editor as any);
   monaco.editor.setTheme('main');
+
+  mermaid.initialize(theme.mermaidConfig);
 }
 
 export function getTheme(name?: string | null): LoadedFluxTheme {

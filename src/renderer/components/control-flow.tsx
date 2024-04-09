@@ -9,18 +9,6 @@ interface IControlFlowProps {
   appState: AppState;
 }
 
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'dark',
-  securityLevel: 'loose',
-  fontFamily: 'consolas, monospace',
-  themeCSS: `
-    .nodeLabel {
-      text-align: left;
-    }
-  `,
-});
-
 export const ControlFlow = observer(({ appState }: IControlFlowProps) => {
   const { cfgMermaid } = appState.editorMosaic.mainEditor;
   const { setPanZoom } = appState.editorMosaic;

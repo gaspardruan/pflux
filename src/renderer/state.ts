@@ -4,6 +4,7 @@ import {
   computed,
   makeObservable,
   observable,
+  reaction,
   when,
 } from 'mobx';
 import * as MonacoType from 'monaco-editor';
@@ -17,6 +18,8 @@ import {
   WinType,
 } from '../interface';
 import { getGridId } from '../utils/editor-utils';
+import { LoadedFluxTheme } from '../themes-defaults';
+import { getTheme } from './theme';
 
 /**
  * The application's state. Exported as a singleton.
@@ -30,6 +33,7 @@ export class AppState {
   public isUsingSystemTheme = !!(
     this.retrieve<boolean>(GlobalSetting.isUsingSystemTheme) ?? true
   );
+  public selectedTheme = getTheme(this.theme);
   public fontFamily: string | undefined =
     (localStorage.getItem(GlobalSetting.fontFamily) as string) || undefined;
   public fontSize: number | undefined =
@@ -86,15 +90,19 @@ export class AppState {
       genericDialogLastResult: observable,
       genericDialogOptions: observable,
       isGenericDialogShowing: observable,
-      isHeaderFocusable: computed,
       isTestCaseActive: computed,
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
+      resetView: action,
+      selectedTheme: observable,
       setFileTreeState: action,
       setFolderPathAndName: action,
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
+      setIsUsingSystemTheme: action,
+      setIsSettingsShowing: action,
+      setSelectedTheme: action,
       setTheme: action,
       showConfirmDialog: action,
       showErrorDialog: action,
@@ -104,6 +112,7 @@ export class AppState {
       sliceActive: computed,
       sliceExtractActive: computed,
       testCaseButtonEnabled: computed,
+      toggleSettings: action,
       theme: observable,
       title: computed,
       toggleSystemTheme: action,
@@ -115,9 +124,14 @@ export class AppState {
     this.clearSlice = this.clearSlice.bind(this);
     this.setupControlFlow = this.setupControlFlow.bind(this);
     this.setupDefUse = this.setupDefUse.bind(this);
+    this.setTheme = this.setTheme.bind(this);
+    this.setIsUsingSystemTheme = this.setIsUsingSystemTheme.bind(this);
+    this.setIsSettingsShowing = this.setIsSettingsShowing.bind(this);
+    this.setSelectedTheme = this.setSelectedTheme.bind(this);
     this.analyzeCoverage = this.analyzeCoverage.bind(this);
     this.clearDefUse = this.clearDefUse.bind(this);
     this.clearCoverageAnalysis = this.clearCoverageAnalysis.bind(this);
+    this.toggleSettings = this.toggleSettings.bind(this);
 
     // Setup auto-runs
     autorun(() => this.save(GlobalSetting.theme, this.theme));
@@ -128,6 +142,17 @@ export class AppState {
     autorun(() => this.save(GlobalSetting.fontSize, this.fontSize));
     autorun(() => this.save(GlobalSetting.folderPath, this.folderPath));
     autorun(() => this.save(GlobalSetting.folderName, this.folderName));
+
+    // reaction
+    reaction(
+      () => this.theme,
+      () => {
+        console.log('Theme changed to', this.theme);
+        const t = getTheme(this.theme);
+        this.setSelectedTheme(t);
+      },
+    );
+
     // load flux
     this.initEditorMosaic();
   }
@@ -139,10 +164,6 @@ export class AppState {
     const { isSaved } = this.editorMosaic;
 
     return isSaved ? 'Electron Flux' : 'Electron Flux - Unsaved';
-  }
-
-  get isHeaderFocusable(): boolean {
-    return !this.isSettingsShowing;
   }
 
   get sliceActive(): boolean {
@@ -220,9 +241,57 @@ export class AppState {
     );
   }
 
+  public toggleSettings() {
+    (document.activeElement as HTMLInputElement).blur();
+    this.resetView({ isSettingsShowing: !this.isSettingsShowing });
+  }
+
+  /**
+   * Show or close secondary windows such as settings and dialogs.
+   */
+  public resetView(
+    opts: {
+      isGenericDialogShowing?: boolean;
+      isSettingsShowing?: boolean;
+    } = {},
+  ) {
+    this.isGenericDialogShowing = Boolean(opts.isGenericDialogShowing);
+    this.isSettingsShowing = Boolean(opts.isSettingsShowing);
+    this.setPageHash();
+  }
+
+  /**
+   * Updates the pages url with a hash element that allows the main
+   * process to quickly determine if there's a view open.
+   *
+   * @private
+   * @memberof AppState
+   */
+  private setPageHash() {
+    let hash = '';
+
+    if (this.isSettingsShowing) {
+      hash = 'settings';
+    }
+
+    window.location.hash = hash;
+  }
+
   public setTheme(fileName?: string) {
     this.theme = fileName || '';
     window.app.loadTheme(this.theme);
+  }
+
+  public setIsUsingSystemTheme(isUsingSystemTheme: boolean) {
+    this.isUsingSystemTheme = isUsingSystemTheme;
+  }
+
+  public setSelectedTheme(theme: LoadedFluxTheme) {
+    this.selectedTheme = theme;
+  }
+
+  public setIsSettingsShowing(isSettingsShowing: boolean) {
+    this.isSettingsShowing = isSettingsShowing;
   }
 
   public toggleSystemTheme() {

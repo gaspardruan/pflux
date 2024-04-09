@@ -1,5 +1,6 @@
 import { Button, ButtonGroup } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
+import classNames from 'classnames';
 
 import { AppState } from '../state';
 import { getGridId } from '../../utils/editor-utils';
@@ -28,6 +29,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     setupDefUse,
     clearDefUse,
     setupControlFlow,
+    toggleSettings,
   } = appState;
   const {
     cursorPosition,
@@ -106,26 +108,24 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     }
   };
 
+  const handleSettingClick = () => {
+    toggleSettings();
+  };
+
   const handleCoverageAnalysisClick = () => {
     analyzeCoverage();
   };
 
   return (
     <div
-      className={
-        window.ElectronFlux.platform === 'darwin'
-          ? 'commands is-mac'
-          : 'commands'
-      }
+      className={classNames('commands', {
+        'is-mac': window.ElectronFlux.platform === 'darwin',
+      })}
       onDoubleClick={handleDoubleClick}
     >
       <div>
         <ButtonGroup fill>
-          <Button
-            icon="cog"
-            title="Setting"
-            onClick={() => console.log('Setting clicked.')}
-          />
+          <Button icon="cog" title="Setting" onClick={handleSettingClick} />
         </ButtonGroup>
 
         <ButtonGroup fill>

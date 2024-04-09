@@ -64,15 +64,7 @@ export class App {
       () => this.state.isUsingSystemTheme,
       () => {
         if (this.state.isUsingSystemTheme) {
-          console.log('Using system theme');
           window.ElectronFlux.setNativeTheme('system');
-
-          if (window.matchMedia) {
-            const { matches } = window.matchMedia(
-              '(prefers-color-scheme: dark)',
-            );
-            setSystemTheme(matches);
-          }
         }
       },
     );
@@ -97,8 +89,10 @@ export class App {
   public loadTheme(name: string): void {
     const tag: HTMLStyleElement | null =
       document.querySelector('style#flux-theme');
+    console.log('loadTheme() called getTheme() with name:', name);
     const theme = getTheme(name);
     activateTheme(theme);
+    this.state.editorMosaic.resetLayout();
 
     if (tag && theme.css) {
       tag.innerHTML = theme.css;
@@ -108,6 +102,7 @@ export class App {
       document.body.classList.add('bp5-dark');
       if (!this.state.isUsingSystemTheme) {
         window.ElectronFlux.setNativeTheme('dark');
+        console.log("SetNativeTheme('dark')");
       }
     } else {
       document.body.classList.remove('bp5-dark');
