@@ -1,8 +1,9 @@
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 
 import { resolveHtmlPath } from './util';
 import { createContextMenu } from './context-menu';
+import { IpcEvents } from '../ipc-events';
 
 /**
  * Get default main window options
@@ -64,5 +65,14 @@ export async function createWindow() {
   mainWindow.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
+  });
+
+  // mainWindow.webContents.on('will-navigate', (event, url) => {
+  //   event.preventDefault();
+  //   shell.openExternal(url);
+  // });
+
+  ipcMain.on(IpcEvents.RELOAD_WINDOW, () => {
+    mainWindow?.reload();
   });
 }

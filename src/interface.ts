@@ -7,6 +7,7 @@ export enum GlobalSetting {
   isUsingSystemTheme = 'isUsingSystemTheme',
   theme = 'theme',
   fontFamily = 'fontFamily',
+  fontFamilyList = 'fontFamilyList',
   fontSize = 'fontSize',
   folderPath = 'folderPath',
   folderName = 'folderName',

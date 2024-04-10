@@ -39,6 +39,12 @@ export class AppState {
   public fontSize: number | undefined =
     parseInt(localStorage.getItem(GlobalSetting.fontSize)!, 10) || undefined;
 
+  public fontFamilyList: string[] = localStorage.getItem(
+    GlobalSetting.fontFamilyList,
+  )
+    ? JSON.parse(localStorage.getItem(GlobalSetting.fontFamilyList)!)
+    : ['Consolas', 'Courier New', 'monospace'];
+
   public folderPath: string | null = localStorage.getItem(
     GlobalSetting.folderPath,
   );
@@ -97,6 +103,8 @@ export class AppState {
       selectedTheme: observable,
       setFileTreeState: action,
       setFolderPathAndName: action,
+      setFontFamily: action,
+      setFontSize: action,
       setGenericDialogLastInput: action,
       setGenericDialogLastResult: action,
       setGenericDialogShowing: action,
@@ -125,6 +133,8 @@ export class AppState {
     this.setupControlFlow = this.setupControlFlow.bind(this);
     this.setupDefUse = this.setupDefUse.bind(this);
     this.setTheme = this.setTheme.bind(this);
+    this.setFontFamily = this.setFontFamily.bind(this);
+    this.setFontSize = this.setFontSize.bind(this);
     this.setIsUsingSystemTheme = this.setIsUsingSystemTheme.bind(this);
     this.setIsSettingsShowing = this.setIsSettingsShowing.bind(this);
     this.setSelectedTheme = this.setSelectedTheme.bind(this);
@@ -280,6 +290,18 @@ export class AppState {
   public setTheme(fileName?: string) {
     this.theme = fileName || '';
     window.app.loadTheme(this.theme);
+  }
+
+  public setFontFamily(fontFamily: string | undefined) {
+    this.fontFamily = fontFamily;
+  }
+
+  public setFontFaimlyList(fontFamilyList: string[]) {
+    this.fontFamilyList = fontFamilyList;
+  }
+
+  public setFontSize(fontSize: number | undefined) {
+    this.fontSize = fontSize;
   }
 
   public setIsUsingSystemTheme(isUsingSystemTheme: boolean) {

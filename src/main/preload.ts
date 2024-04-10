@@ -105,6 +105,9 @@ const electronHandler = {
   pathExists: (path: string): boolean =>
     ipcRenderer.sendSync(IpcEvents.PATH_EXISTS, path),
   platform: process.platform,
+  reloadWindows() {
+    ipcRenderer.send(IpcEvents.RELOAD_WINDOW);
+  },
   removeAllListeners(type: FluxEvent) {
     const channel = channelMapping[type];
     if (channel) {

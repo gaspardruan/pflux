@@ -3,12 +3,13 @@ import { when, reaction } from 'mobx';
 
 import { AppState } from './state';
 import { activateTheme, getTheme } from './theme';
-
+import fontList from './font';
+import { FileManager } from './file-manager';
+import { GlobalSetting } from '../interface';
 import { defaultDark, defaultLight } from '../themes-defaults';
 
 // Importing styles files
 import '../less/root.less';
-import { FileManager } from './file-manager';
 
 /**
  * The top-level class controlling the whole app. This is not a React component,
@@ -25,6 +26,7 @@ export class App {
    */
   public async setup() {
     this.loadTheme(this.state.theme || '');
+    this.loadFonts();
 
     const [{ createRoot }, { Dialogs }, { SidebarEditorsWrapper }, { Header }] =
       await Promise.all([
@@ -111,4 +113,27 @@ export class App {
       }
     }
   }
+
+  public loadFonts = async () => {
+    // eslint-disable-next-line promise/catch-or-return
+    document.fonts.ready.then(() => {
+      if (!this.state.fontFamilyList || this.state.fontFamilyList.length <= 3) {
+        const fontAvailable = [];
+
+        for (const font of fontList.values()) {
+          if (document.fonts.check(`12px "${font}"`)) {
+            fontAvailable.push(font);
+          }
+        }
+
+        if (fontAvailable.length > 0) {
+          this.state.setFontFaimlyList(fontAvailable);
+          localStorage.setItem(
+            GlobalSetting.fontFamilyList,
+            JSON.stringify(fontAvailable),
+          );
+        }
+      }
+    });
+  };
 }
