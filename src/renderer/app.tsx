@@ -27,6 +27,7 @@ export class App {
   public async setup() {
     this.loadTheme(this.state.theme || '');
     this.loadFonts();
+    this.setupPythonPath();
 
     const [{ createRoot }, { Dialogs }, { SidebarEditorsWrapper }, { Header }] =
       await Promise.all([
@@ -114,7 +115,7 @@ export class App {
     }
   }
 
-  public loadFonts = async () => {
+  public loadFonts() {
     // eslint-disable-next-line promise/catch-or-return
     document.fonts.ready.then(() => {
       if (!this.state.fontFamilyList || this.state.fontFamilyList.length <= 3) {
@@ -135,5 +136,16 @@ export class App {
         }
       }
     });
-  };
+  }
+
+  public setupPythonPath() {
+    console.log('setupPythonPath() called');
+    // eslint-disable-next-line promise/catch-or-return
+    window.ElectronFlux.getPythonPath().then((pythonPath) => {
+      if (pythonPath) {
+        this.state.setPythonPath(pythonPath);
+        console.log('Python path set to', pythonPath);
+      }
+    });
+  }
 }

@@ -82,6 +82,10 @@ const electronHandler = {
   getDefUseLines(code: string, location: Location): Promise<DefUseCollection> {
     return ipcRenderer.invoke(IpcEvents.DEF_USE_LINES, code, location);
   },
+  getPythonPath(): Promise<string> {
+    console.log('getPythonPath');
+    return ipcRenderer.invoke(IpcEvents.GET_PYTHON_PATH);
+  },
   macTitlebarClicked() {
     ipcRenderer.send(IpcEvents.CLICK_TITLEBAR_MAC);
   },

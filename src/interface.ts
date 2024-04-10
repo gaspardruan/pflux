@@ -11,6 +11,7 @@ export enum GlobalSetting {
   fontSize = 'fontSize',
   folderPath = 'folderPath',
   folderName = 'folderName',
+  pythonPath = 'pythonPath',
 }
 
 export type WrapperEditorId = 'sidebar' | 'editors' | 'input';

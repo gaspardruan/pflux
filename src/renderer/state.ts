@@ -53,6 +53,8 @@ export class AppState {
     GlobalSetting.folderName,
   );
 
+  public pythonPath: string | null = null;
+
   // -- Various sesstion-only settings ------
   public genericDialogOptions: GenericDialogOptions = {
     type: GenericDialogType.warning,
@@ -99,6 +101,7 @@ export class AppState {
       isTestCaseActive: computed,
       isSettingsShowing: observable,
       isUsingSystemTheme: observable,
+      pythonPath: observable,
       resetView: action,
       selectedTheme: observable,
       setFileTreeState: action,
@@ -110,6 +113,7 @@ export class AppState {
       setGenericDialogShowing: action,
       setIsUsingSystemTheme: action,
       setIsSettingsShowing: action,
+      setPythonPath: action,
       setSelectedTheme: action,
       setTheme: action,
       showConfirmDialog: action,
@@ -137,6 +141,7 @@ export class AppState {
     this.setFontSize = this.setFontSize.bind(this);
     this.setIsUsingSystemTheme = this.setIsUsingSystemTheme.bind(this);
     this.setIsSettingsShowing = this.setIsSettingsShowing.bind(this);
+    this.setPythonPath = this.setPythonPath.bind(this);
     this.setSelectedTheme = this.setSelectedTheme.bind(this);
     this.analyzeCoverage = this.analyzeCoverage.bind(this);
     this.clearDefUse = this.clearDefUse.bind(this);
@@ -314,6 +319,10 @@ export class AppState {
 
   public setIsSettingsShowing(isSettingsShowing: boolean) {
     this.isSettingsShowing = isSettingsShowing;
+  }
+
+  public setPythonPath(pythonPath: string) {
+    this.pythonPath = pythonPath;
   }
 
   public toggleSystemTheme() {

@@ -4,6 +4,7 @@ import { Divider } from '@blueprintjs/core';
 import { AppState } from '../state';
 import { AppearanceSettings } from './settings-general-appearance';
 import { FontSettings } from './settings-general-font';
+import { PythonSettings } from './settings-general-python';
 
 interface GeneralSettingsProps {
   appState: AppState;
@@ -21,6 +22,8 @@ export const GeneralSettings = observer(
         />
         <Divider />
         <FontSettings appState={appState} />
+        <Divider />
+        <PythonSettings appState={appState} />
       </div>
     );
   },

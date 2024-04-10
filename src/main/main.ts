@@ -29,6 +29,7 @@ import { setupSliceParse } from './core/slice-parse';
 import { setupControlFlow } from './core/control-flow';
 import { setupDefUseLines } from './core/def-use-lines';
 import { setupAnalyzeCoverage } from './core/coverage';
+import { setupPythonListener } from './python';
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -53,6 +54,7 @@ export async function onReady() {
   setupNativeTheme();
   setupContent();
   setupFileListener();
+  setupPythonListener();
 
   setupStructParse();
   setupSliceParse();

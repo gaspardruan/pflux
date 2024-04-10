@@ -134,7 +134,7 @@ export async function showOpenDialog() {
   }
   app.addRecentDocument(filePaths[0]);
   const window = BrowserWindow.getFocusedWindow();
-  const files = await openFiddle(filePaths[0]);
+  const files = await openFlux(filePaths[0]);
   if (window)
     window.webContents.send(
       IpcEvents.FS_OPEN_FLUX,
@@ -209,7 +209,7 @@ async function confirmFileOverwrite(filePath: string): Promise<boolean> {
 /**
  * Tries to open a fiddle.
  */
-export async function openFiddle(filePath: string): Promise<EditorValues> {
+export async function openFlux(filePath: string): Promise<EditorValues> {
   console.log(`openFlux: Asked to open`, filePath);
   return readFlux(filePath);
 }

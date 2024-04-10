@@ -113,7 +113,9 @@ export const FontSettings = observer(({ appState }: FontSettingsProps) => {
             className="font-size-input"
           />
         </FormGroup>
-        <Button onClick={handleReset} icon="reset" text="Reset to Default" />
+        <FormGroup label="Reset">
+          <Button onClick={handleReset} icon="reset" text="Default" />
+        </FormGroup>
       </Callout>
     </div>
   );
