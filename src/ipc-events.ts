@@ -1,4 +1,5 @@
 export enum IpcEvents {
+  CHECK_PYTHON_PATH = 'CHECK_PYTHON_PATH',
   CLICK_TITLEBAR_MAC = 'CLICK_TITLEBAR_MAC',
   CONTROL_FLOW = 'CONTROL_FLOW',
   COVERAGE_STANDARD = 'COVERAGE_STANDARD',
@@ -26,6 +27,7 @@ export enum IpcEvents {
 
 export const ipcMainEvents = [
   IpcEvents.CLICK_TITLEBAR_MAC,
+  IpcEvents.CHECK_PYTHON_PATH,
   IpcEvents.CONTROL_FLOW,
   IpcEvents.COVERAGE_STANDARD,
   IpcEvents.DEF_USE_LINES,

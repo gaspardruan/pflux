@@ -12,7 +12,21 @@ export const PythonSettings = observer(({ appState }: PythonSettingsProps) => {
   const { setPythonPath, pythonPath } = appState;
 
   const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
-    setPythonPath(event.currentTarget.value);
+    const { files } = event.target as HTMLInputElement;
+    if (files!.length > 0 && files![0].path) {
+      const { path } = files![0];
+      // eslint-disable-next-line promise/catch-or-return
+      window.ElectronFlux.isPythonPathValid(path).then((valid) => {
+        if (valid) {
+          setPythonPath(path);
+        } else {
+          console.log('Python path is invalid');
+          appState.showErrorDialog(
+            'The path is invalid or not a Python3 interpreter',
+          );
+        }
+      });
+    }
   };
 
   return (
@@ -20,7 +34,7 @@ export const PythonSettings = observer(({ appState }: PythonSettingsProps) => {
       <h1>Python</h1>
       <Callout>
         <p>{instruction}</p>
-        <FormGroup label="Python interpreter Path" labelFor="python-path">
+        <FormGroup label="Python interpreter path" labelFor="python-path">
           <FileInput
             fill
             id="python-path"

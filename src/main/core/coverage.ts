@@ -244,6 +244,7 @@ export async function getExecPaths(
   line: number,
   funcDef: string,
   testCaseExecs: string[],
+  pythonPath: string,
 ): Promise<number[][]> {
   const tempScriptPaths: string[] = [];
   testCaseExecs.forEach((testCaseExec) => {
@@ -258,9 +259,9 @@ export async function getExecPaths(
   });
 
   const result = await Promise.all(
-    tempScriptPaths.map((p) =>
-      exec(`python -u ${p}`, { maxBuffer: 1024 * 1024 * 64 }),
-    ),
+    tempScriptPaths.map((p) => {
+      return exec(`${pythonPath} -u ${p}`, { maxBuffer: 1024 * 1024 * 64 });
+    }),
   );
 
   // delete files asynchronously
@@ -280,8 +281,14 @@ export async function analyzeCoverage(
   line: number,
   funcDef: string,
   testCaseExecs: string[],
+  pythonPath: string,
 ): Promise<CoverageResult> {
-  const execPaths = await getExecPaths(line, funcDef, testCaseExecs);
+  const execPaths = await getExecPaths(
+    line,
+    funcDef,
+    testCaseExecs,
+    pythonPath,
+  );
   const dataflowGroups = getDataflowAggregation(code, line);
 
   execPaths.forEach((execPath) => {
@@ -323,9 +330,10 @@ export function setupAnalyzeCoverage() {
       line: number,
       funcDef: string,
       testCaseExecs: string[],
+      pythonPath: string,
     ) => {
       try {
-        return analyzeCoverage(code, line, funcDef, testCaseExecs);
+        return analyzeCoverage(code, line, funcDef, testCaseExecs, pythonPath);
       } catch (e) {
         console.error(e);
         return {

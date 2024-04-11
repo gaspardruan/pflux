@@ -21,7 +21,6 @@ export function activateTheme(theme: LoadedFluxTheme) {
 }
 
 export function getTheme(name?: string | null): LoadedFluxTheme {
-  console.log(`Themes: getTheme() loading ${name || 'default'}`);
   let theme: LoadedFluxTheme | null;
   switch (name) {
     case DefaultThemes.DARK:

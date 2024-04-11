@@ -92,7 +92,6 @@ export class App {
   public loadTheme(name: string): void {
     const tag: HTMLStyleElement | null =
       document.querySelector('style#flux-theme');
-    console.log('loadTheme() called getTheme() with name:', name);
     const theme = getTheme(name);
     activateTheme(theme);
     this.state.editorMosaic.resetLayout();
@@ -105,7 +104,6 @@ export class App {
       document.body.classList.add('bp5-dark');
       if (!this.state.isUsingSystemTheme) {
         window.ElectronFlux.setNativeTheme('dark');
-        console.log("SetNativeTheme('dark')");
       }
     } else {
       document.body.classList.remove('bp5-dark');
@@ -139,12 +137,11 @@ export class App {
   }
 
   public setupPythonPath() {
-    console.log('setupPythonPath() called');
     // eslint-disable-next-line promise/catch-or-return
     window.ElectronFlux.getPythonPath().then((pythonPath) => {
-      if (pythonPath) {
+      if (pythonPath && this.state.pythonPath === null) {
         this.state.setPythonPath(pythonPath);
-        console.log('Python path set to', pythonPath);
+        console.log('Python path:', pythonPath);
       }
     });
   }

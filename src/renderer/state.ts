@@ -53,7 +53,9 @@ export class AppState {
     GlobalSetting.folderName,
   );
 
-  public pythonPath: string | null = null;
+  public pythonPath: string | null = localStorage.getItem(
+    GlobalSetting.pythonPath,
+  );
 
   // -- Various sesstion-only settings ------
   public genericDialogOptions: GenericDialogOptions = {
@@ -157,12 +159,12 @@ export class AppState {
     autorun(() => this.save(GlobalSetting.fontSize, this.fontSize));
     autorun(() => this.save(GlobalSetting.folderPath, this.folderPath));
     autorun(() => this.save(GlobalSetting.folderName, this.folderName));
+    autorun(() => this.save(GlobalSetting.pythonPath, this.pythonPath));
 
     // reaction
     reaction(
       () => this.theme,
       () => {
-        console.log('Theme changed to', this.theme);
         const t = getTheme(this.theme);
         this.setSelectedTheme(t);
       },
@@ -544,6 +546,13 @@ export class AppState {
   }
 
   public analyzeCoverage = () => {
+    if (!this.pythonPath) {
+      this.showErrorDialog(
+        '1. make sure `python --version` is available in the shell. Or, set the python path in the settings.\n2. Reopen the app.',
+      );
+      return;
+    }
+
     const em = this.editorMosaic;
     const { focusedFuncSignature } = em.mainEditor.testCaseCollection!;
     const range = em.getDefFromStructTree(em.structTree, focusedFuncSignature);
@@ -564,6 +573,7 @@ export class AppState {
       range.startLineNumber,
       funcDef,
       testCaseExecs,
+      this.pythonPath,
     )
       .then((res) => {
         em.setCoverageAnalysis(res);

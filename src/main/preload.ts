@@ -49,6 +49,7 @@ const electronHandler = {
     line: number,
     funcDef: string,
     testCaseExecs: string[],
+    pythonPath: string,
   ) {
     return ipcRenderer.invoke(
       IpcEvents.COVERAGE_STANDARD,
@@ -56,6 +57,7 @@ const electronHandler = {
       line,
       funcDef,
       testCaseExecs,
+      pythonPath,
     );
   },
   deleteFile(folderPath: string, fileName: string): Promise<boolean> {
@@ -83,8 +85,10 @@ const electronHandler = {
     return ipcRenderer.invoke(IpcEvents.DEF_USE_LINES, code, location);
   },
   getPythonPath(): Promise<string> {
-    console.log('getPythonPath');
     return ipcRenderer.invoke(IpcEvents.GET_PYTHON_PATH);
+  },
+  isPythonPathValid(path: string): Promise<boolean> {
+    return ipcRenderer.invoke(IpcEvents.CHECK_PYTHON_PATH, path);
   },
   macTitlebarClicked() {
     ipcRenderer.send(IpcEvents.CLICK_TITLEBAR_MAC);
