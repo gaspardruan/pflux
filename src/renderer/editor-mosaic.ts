@@ -627,7 +627,7 @@ export class EditorMosaic {
     return decorations;
   }
 
-  public setSliceEditor(id: SliceId, editor: Editor) {
+  public setSliceEditor(_id: SliceId, editor: Editor) {
     this.mainEditor.sliceEditor = editor;
     editor.setModel(this.getSlicedCodeModel());
   }

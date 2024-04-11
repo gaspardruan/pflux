@@ -115,7 +115,7 @@ export function slice(
 
   // Include at least the full statements for each seed.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let acceptNode = (node: SyntaxNode) => true;
+  let acceptNode = (_node: SyntaxNode) => true;
   let sliceNodes = new NodeSet();
   if (seedLocations) {
     const seedStatementNodes = findSeedStatementNodes(seedLocations, cfg);
@@ -238,6 +238,7 @@ function findSeedStatement(seedLocation: Location, cfg: ControlFlowGraph) {
       }
     }
   }
+  return undefined;
 }
 
 function findSeedStatementNodes(

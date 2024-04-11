@@ -21,7 +21,7 @@ export function setupPythonListener() {
     return '';
   });
 
-  ipcMain.handle(IpcEvents.CHECK_PYTHON_PATH, async (event, _path: string) => {
+  ipcMain.handle(IpcEvents.CHECK_PYTHON_PATH, async (_event, _path: string) => {
     if (_path.length > 0 && (await checkIsPython3(_path))) {
       return true;
     }
