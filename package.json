@@ -87,9 +87,8 @@
     "testEnvironmentOptions": {
       "url": "http://localhost/"
     },
-    "testPathIgnorePatterns": [
-      "release/app/dist",
-      ".erb/dll"
+    "testMatch": [
+      "**/tests/**/*-spec.{ts,tsx}"
     ],
     "transform": {
       "\\.(ts|tsx|js|jsx)$": "ts-jest"
