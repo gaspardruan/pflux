@@ -36,6 +36,7 @@ export enum WinType {
   EDITOR = 'Editor',
   ANALYSIS = 'Analysis',
   FLOW = 'Flow',
+  FLOWGRAPH = 'FlowGraph',
   SLICE = 'Slice',
   CFG = 'CFG',
   VARDEP = 'VarDep',
@@ -47,12 +48,14 @@ export type SliceId = `${string}.${'py'}__Slice`;
 export type CFGId = `${string}.${'py'}__CFG`;
 export type VarDepId = `${string}.${'py'}__VarDep`;
 export type FlowId = `${string}.${'py'}__Flow`;
+export type FlowGraphId = `${string}.${'py'}__FlowGraph`;
 export type AnalysisId = `${string}.${'py'}__Analysis`;
 export type TestCaseId = `${string}.${'py'}__TestCase`;
 export type GridId =
   | EditorId
   | SliceId
   | FlowId
+  | FlowGraphId
   | AnalysisId
   | CFGId
   | TestCaseId
@@ -115,6 +118,7 @@ export interface DefUseCollection {
   useLines: number[];
   defUseLines: number[];
   dcPaths: DCPath[];
+  dcMermaid: string;
 }
 
 export enum UseType {

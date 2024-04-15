@@ -29,9 +29,11 @@ import { toggleMonaco } from '../../utils/toggle-monaco';
 import { ControlFlow } from './control-flow';
 import { VarDep } from './var-dep';
 import { MarkTag } from './mark-tag';
+import { MarkTagDC } from './mark-tag-dc';
 import { DCPath } from './dc-path';
 import { TestCase } from './test-case';
 import { CoverageAnalysis } from './coverage-analysis';
+import { DCPathMermaid } from './dc-path-mermaid';
 
 const defaultMonacoOptions: MonacoType.editor.IEditorOptions = {
   minimap: {
@@ -176,6 +178,35 @@ export const Editors = observer(({ appState }: EditorsProps) => {
         {/* Right */}
         <div className="mosaic-controls">
           <MaximizeButton id={id} appState={appState} />
+          {/* <RemoveButton id={id} appState={appState} /> */}
+        </div>
+      </div>
+    );
+  };
+
+  /**
+   * Renders the little tool bar on top of each panel
+   *
+   * @param {MosaicWindowProps<GridId>} { title }
+   * @param {EditorId} id
+   * @returns {JSX.Element}
+   */
+  const renderDCToolbar = (
+    { title }: MosaicWindowProps<GridId>,
+    id: GridId,
+  ): React.JSX.Element => {
+    return (
+      <div>
+        {/* Left */}
+        <div className="toolbar-left">
+          <h5>{title}</h5>
+          <MarkTagDC appState={appState} />
+        </div>
+        {/* Middle */}
+        <div />
+        {/* Right */}
+        <div className="mosaic-controls">
+          <MaximizeButton id={id} appState={appState} />
           <RemoveButton id={id} appState={appState} />
         </div>
       </div>
@@ -268,6 +299,10 @@ export const Editors = observer(({ appState }: EditorsProps) => {
 
   const renderCoverageAnalysis = (): React.JSX.Element | null => {
     return <CoverageAnalysis appState={appState} />;
+  };
+
+  const renderDCPathMermaid = (): React.JSX.Element | null => {
+    return <DCPathMermaid appState={appState} />;
   };
 
   /**
@@ -382,6 +417,21 @@ export const Editors = observer(({ appState }: EditorsProps) => {
           title={title}
           renderToolbar={(props: MosaicWindowProps<GridId>) =>
             renderToolbar(props, id)
+          }
+        >
+          {content}
+        </MosaicWindow>
+      );
+    }
+    if (_id.endsWith('__FlowGraph')) {
+      const id = _id as GridId;
+      const content = renderDCPathMermaid();
+      return (
+        <MosaicWindow<GridId>
+          path={path}
+          title={title}
+          renderToolbar={(props: MosaicWindowProps<GridId>) =>
+            renderDCToolbar(props, id)
           }
         >
           {content}

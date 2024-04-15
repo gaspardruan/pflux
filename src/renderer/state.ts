@@ -89,6 +89,7 @@ export class AppState {
       clearCoverageAnalysis: action,
       controlFlowActive: computed,
       dcPathExtractActive: computed,
+      dcPathMermaidActive: computed,
       defUseActive: computed,
       editorMosaic: observable,
       fileTreeState: observable,
@@ -195,6 +196,13 @@ export class AppState {
   get varDepActive(): boolean {
     const { mosaic, id } = this.editorMosaic.mainEditor;
     return getLeaves(mosaic).some((v) => v === getGridId(WinType.VARDEP, id!));
+  }
+
+  get dcPathMermaidActive(): boolean {
+    const { mosaic, id } = this.editorMosaic.mainEditor;
+    return getLeaves(mosaic).some(
+      (v) => v === getGridId(WinType.FLOWGRAPH, id!),
+    );
   }
 
   get controlFlowActive(): boolean {
@@ -516,6 +524,7 @@ export class AppState {
       useLines: [],
       defUseLines: [],
       dcPaths: [],
+      dcMermaid: '',
     };
     if (this.editorMosaic.defUseTempLineDecoration) {
       this.editorMosaic.defUseTempLineDecoration.clear();

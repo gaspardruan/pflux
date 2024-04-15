@@ -2,6 +2,7 @@ import { ipcMain } from 'electron';
 import {
   ASSIGN,
   Assignment,
+  Block,
   CALL,
   ControlFlowGraph,
   DEF,
@@ -10,13 +11,17 @@ import {
   Location,
   MODULE,
   Module,
+  NAME,
+  PASS,
   Parameter,
   parse,
+  printNode,
   walk,
 } from '@msrvida/python-program-analysis';
 import { findSeedName, within } from './common';
-import { DefUseCollection, DCPath, UseType } from '../../interface';
+import { DefUseCollection, DCPath, UseType, Link } from '../../interface';
 import { IpcEvents } from '../../ipc-events';
+import { getShape, findFunctionAtLine, readBlocks } from './control-flow';
 
 export function findFunctionAtLocation(
   code: string,
@@ -110,6 +115,102 @@ export function fixLocation(ast: Module, line: number, column: number) {
   });
 }
 
+export function dcPathInMermaid(
+  blocks: Block[],
+  conn: Link[],
+  isFixed: boolean,
+  dcPaths: DCPath[],
+): string {
+  let linkCount = 0;
+
+  const nodes = blocks.map((b, bIndex) => {
+    const str =
+      b.statements
+        .map((s, sIndex) => {
+          if (isFixed && bIndex === 0 && sIndex === 0) {
+            if (s.type === ASSIGN) {
+              const params = s.targets
+                .map((t) => {
+                  if (t.type === NAME) return t.id;
+                  throw new Error('Function params parsing error');
+                })
+                .join(', ');
+              return `${s.location?.first_line}: Params: ${params}`;
+            }
+            throw new Error('Function params parsing error');
+          }
+          return `${s.location?.first_line}: ${
+            s.type === PASS ? 'pass' : printNode(s)
+          }`;
+        })
+        .join('\n')
+        .replace(/"/g, '#quot;')
+        .replace(/</g, ' < ') || (b.hint === 'entry' ? 'Start' : ' ');
+    const [start, end] = getShape(b.hint, str === ' ', str === 'Start');
+    if (str === ' ' || str === 'Start')
+      return `  BLOCK_${b.id}${start}"\`${
+        b.hint === 'for loop head' ? '(for loop)\n' : ''
+      }${str}\`"${end}`;
+
+    const lineNums: string[] = [];
+    const subgraph = str.split('\n').map((s) => {
+      const lineNum = s.split(':')[0];
+      lineNums.push(lineNum);
+      return `  LINE_${lineNum}${start}"\`${
+        b.hint === 'for loop head' ? '(for loop)\n' : ''
+      }${s}\`"${end}`;
+    });
+    const invisibleLinks = [];
+    for (let i = 0; i < lineNums.length - 1; i += 1) {
+      invisibleLinks.push(`  LINE_${lineNums[i]} ~~~ LINE_${lineNums[i + 1]}`);
+    }
+    linkCount += invisibleLinks.length;
+    return `  subgraph BLOCK_${b.id}\n  direction TB\n${subgraph.join(
+      '\n',
+    )}\n${invisibleLinks.join('\n')}${
+      invisibleLinks.length === 0 ? '' : '\n'
+    }  end`;
+  });
+
+  const cUseOrder: number[] = [];
+  const pUserOrder: number[] = [];
+  const dcPathStr = dcPaths.map((dc) => {
+    if (dc.useType === UseType.C) {
+      cUseOrder.push(linkCount);
+    } else {
+      pUserOrder.push(linkCount);
+    }
+    linkCount += 1;
+    return `  LINE_${dc.startLine} --> LINE_${dc.endLine}`;
+  });
+
+  const cUselinkStyle =
+    cUseOrder.length > 0
+      ? `  linkStyle ${cUseOrder.join(',')} stroke:blue,stroke-width:1px`
+      : '';
+  const pUselinkStyle =
+    pUserOrder.length > 0
+      ? `  linkStyle ${pUserOrder.join(',')} stroke:green,stroke-width:1px`
+      : '';
+
+  const edges = conn.map((c) => {
+    return `  BLOCK_${c.from} ${c.label ? '--->' : '-->'}${
+      c.label ? `|${c.label}|` : ''
+    } BLOCK_${c.to}`;
+  });
+
+  return `flowchart TB\n${nodes.join('\n')}\n${dcPathStr.join(
+    '\n',
+  )}\n${edges.join('\n')}\n${cUselinkStyle}\n${pUselinkStyle}`;
+}
+
+export function getMermaid(code: string, funcLine: number, dcPaths: DCPath[]) {
+  const [ast, isFixed] = findFunctionAtLine(code, funcLine);
+  const [blocks, conn] = readBlocks(ast);
+  const connArray = Array.from(conn.values());
+  return dcPathInMermaid(blocks, connArray, isFixed, dcPaths);
+}
+
 export function getDefUseLines(
   code: string,
   location: Location,
@@ -175,6 +276,8 @@ export function getDefUseLines(
     useLineSet.delete(line);
   });
 
+  const dcMermaid = getMermaid(code, module.location!.first_line, dcPaths);
+
   return {
     varName,
     defs,
@@ -184,6 +287,7 @@ export function getDefUseLines(
     useLines: Array.from(useLineSet),
     defUseLines,
     dcPaths,
+    dcMermaid,
   };
 }
 
@@ -204,6 +308,7 @@ export function setupDefUseLines() {
           useLines: [],
           defUseLines: [],
           dcPaths: [],
+          dcMermaid: '',
         };
       }
     },

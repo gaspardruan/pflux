@@ -28,6 +28,11 @@ export function sortGrid(grids: GridId[]) {
     }
   }
   for (const grid of grids) {
+    if (grid.endsWith('__FlowGraph')) {
+      result.push(grid);
+    }
+  }
+  for (const grid of grids) {
     if (grid.endsWith('__TestCase')) {
       result.push(grid);
     }
@@ -55,6 +60,10 @@ export function getEditorTitle(id: GridId): string {
   if (id.endsWith('__Flow')) {
     const name = id.split('__')[0];
     return `DCPath (${name})`;
+  }
+  if (id.endsWith('__FlowGraph')) {
+    const name = id.split('__')[0];
+    return `Flow Graph (${name})`;
   }
   if (id.endsWith('__Analysis')) {
     const name = id.split('__')[0];

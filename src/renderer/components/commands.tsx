@@ -21,6 +21,7 @@ export const Commands = observer(({ appState }: CommandsProps) => {
     controlFlowActive,
     testCaseButtonEnabled,
     dcPathExtractActive,
+    dcPathMermaidActive,
     isTestCaseActive,
     analyzeCoverage,
     parseSlice,
@@ -94,6 +95,14 @@ export const Commands = observer(({ appState }: CommandsProps) => {
       hide(getGridId(WinType.FLOW, id!));
     } else {
       show(getGridId(WinType.FLOW, id!));
+    }
+  };
+
+  const handleDCPathMermaidClick = () => {
+    if (dcPathMermaidActive) {
+      hide(getGridId(WinType.FLOWGRAPH, id!));
+    } else {
+      show(getGridId(WinType.FLOWGRAPH, id!));
     }
   };
 
@@ -195,6 +204,14 @@ export const Commands = observer(({ appState }: CommandsProps) => {
             text="Extract DC-Path"
             title="Def-Use must be active firstly"
             onClick={handleDCExtractClick}
+          />
+          <Button
+            disabled={!dcPathMermaidActive && !defUseActive}
+            active={dcPathMermaidActive}
+            icon="graph"
+            text="DC-Path-Graph"
+            title="Def-Use must be active firstly"
+            onClick={handleDCPathMermaidClick}
           />
         </ButtonGroup>
 

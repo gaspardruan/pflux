@@ -120,6 +120,7 @@ export class EditorMosaic {
 
   public cfgPanZoom: SvgPanZoom.Instance | null = null;
   public varPanZoom: SvgPanZoom.Instance | null = null;
+  public dcPanZoom: SvgPanZoom.Instance | null = null;
 
   constructor() {
     makeObservable(this, {
@@ -269,6 +270,7 @@ export class EditorMosaic {
   public setPanZoom(panZoom: SvgPanZoom.Instance, type = 'cfg') {
     if (type === 'cfg') this.cfgPanZoom = panZoom;
     else if (type === 'varDep') this.varPanZoom = panZoom;
+    else if (type === 'dc') this.dcPanZoom = panZoom;
   }
 
   public setCFGMermaid(mermaid: string) {
@@ -690,6 +692,7 @@ export class EditorMosaic {
         useLines: [],
         defUseLines: [],
         dcPaths: [],
+        dcMermaid: '',
       },
       testCaseCollection: {
         focusedFuncSignature: '',
@@ -778,6 +781,8 @@ export class EditorMosaic {
           this.mainEditor.editor.layout();
         }
         this.cfgPanZoom?.resize();
+        this.varPanZoom?.resize();
+        this.dcPanZoom?.resize();
         this.mainEditor.sliceEditor?.layout();
 
         delete this.layoutDebounce;
