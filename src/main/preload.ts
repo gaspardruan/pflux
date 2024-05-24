@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import { Location } from '@msrvida/python-program-analysis';
 
 import {
+  CoverageResult,
   DefUseCollection,
   EditorValues,
   Files,
@@ -50,7 +51,7 @@ const electronHandler = {
     funcDef: string,
     testCaseExecs: string[],
     pythonPath: string,
-  ) {
+  ): Promise<CoverageResult> {
     return ipcRenderer.invoke(
       IpcEvents.COVERAGE_STANDARD,
       code,
