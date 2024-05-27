@@ -18,6 +18,18 @@ export function setupPythonListener() {
       return stdout;
     }
 
+    r = await exec('where python');
+    stdout = (r.stdout as string).trim();
+    if (!r.stderr && stdout.length > 0 && (await checkIsPython3(r.stdout))) {
+      return stdout;
+    }
+
+    r = await exec('where python3');
+    stdout = (r.stdout as string).trim();
+    if (!r.stderr && stdout.length > 0 && (await checkIsPython3(r.stdout))) {
+      return stdout;
+    }
+
     return '';
   });
 
