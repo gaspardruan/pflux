@@ -186,11 +186,11 @@ export function dcPathInMermaid(
 
   const cUselinkStyle =
     cUseOrder.length > 0
-      ? `  linkStyle ${cUseOrder.join(',')} stroke:blue,stroke-width:1px`
+      ? `  linkStyle ${cUseOrder.join(',')} stroke:blue,stroke-width:2px`
       : '';
   const pUselinkStyle =
     pUserOrder.length > 0
-      ? `  linkStyle ${pUserOrder.join(',')} stroke:green,stroke-width:1px`
+      ? `  linkStyle ${pUserOrder.join(',')} stroke:green,stroke-width:2px`
       : '';
 
   const edges = conn.map((c) => {
